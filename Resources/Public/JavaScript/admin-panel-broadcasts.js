@@ -1,17 +1,29 @@
 (() => {
     const feedStorageKey = 'content-live-reload:broadcasts'
     const updateStorageKey = 'content-live-reload:last-update'
+    const readStoredUpdate = () => {
+        try {
+            return sessionStorage.getItem(updateStorageKey)
+        } catch {
+            return null
+        }
+    }
+
     const state = {
         connected: null,
         mode: null,
-        lastUpdate: sessionStorage.getItem(updateStorageKey),
+        lastUpdate: readStoredUpdate(),
     }
 
     const statusElement = () => {
+        for (const label of document.querySelectorAll('.typo3-adminPanel-module-trigger-label')) {
+            if (label.textContent.trim() !== 'Content Live Reload') continue
+            const information = label.parentElement?.querySelector('.typo3-adminPanel-module-trigger-information')
+            if (information) return information
+        }
         const pane = document.querySelector('[data-typo3-tab-id="content_live_reload_status"]')
         const moduleGroup = pane?.closest('.typo3-adminPanel-module-group')
-        const trigger = moduleGroup?.querySelector('[data-typo3-role="typo3-adminPanel-module-trigger"]')
-        return trigger?.querySelector('.typo3-adminPanel-module-trigger-information') ?? null
+        return moduleGroup?.querySelector('.typo3-adminPanel-module-trigger-information') ?? null
     }
 
     const renderStatus = () => {
@@ -91,19 +103,24 @@
     })
 
     const initialize = () => {
-        const connection = window.__contentLiveReload?.connection
-        if (connection) {
-            state.connected = connection.connected
-            state.mode = connection.mode
-        } else if (window.__contentLiveReload) {
-            state.mode = window.__contentLiveReload.mode
+        try {
+            const connection = window.__contentLiveReload?.connection
+            if (connection) {
+                state.connected = connection.connected
+                state.mode = connection.mode
+            } else if (window.__contentLiveReload) {
+                state.mode = window.__contentLiveReload.mode
+            }
+            renderFeed(readEntries())
+            renderStatus()
+        } catch (error) {
+            console.error('[content-live-reload] admin panel script failed', error)
         }
-        renderFeed(readEntries())
-        renderStatus()
     }
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initialize, { once: true })
     } else {
         initialize()
     }
+    window.addEventListener('load', initialize, { once: true })
 })()
