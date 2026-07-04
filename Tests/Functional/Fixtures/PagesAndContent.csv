@@ -1,0 +1,10 @@
+"pages",,,,,,
+,"uid","pid","title","slug","doktype","sys_language_uid"
+,1,0,"Root","/",1,0
+,42,1,"Content page","/content",1,0
+"tt_content",,,,,,
+,"uid","pid","header","CType","colPos","sys_language_uid"
+,5,42,"Original header","text",0,0
+"be_users",,,,,
+,"uid","pid","username","password","admin"
+,1,0,"admin","$argon2i$dummy","1"
