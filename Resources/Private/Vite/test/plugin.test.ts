@@ -54,6 +54,7 @@ describe('contentLiveReload', () => {
         expect(code).toContain('typo3:content-changed:connection')
         expect(code).toContain('vite:ws:disconnect')
         expect(code).toContain('vite:ws:connect')
+        expect(code).toContain('configuration.connection =')
     })
 
     it('broadcasts debounced deduplicated tags', async () => {

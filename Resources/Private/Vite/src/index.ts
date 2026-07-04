@@ -23,6 +23,7 @@ try {
 } catch {}
 if (configuration && import.meta.hot) {
     const announceConnection = (connected) => {
+        configuration.connection = { connected, mode: configuration.mode }
         document.dispatchEvent(
             new CustomEvent('${EVENT_NAME}:connection', {
                 detail: { connected, mode: configuration.mode },

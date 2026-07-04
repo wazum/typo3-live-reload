@@ -91,6 +91,13 @@
     })
 
     const initialize = () => {
+        const connection = window.__contentLiveReload?.connection
+        if (connection) {
+            state.connected = connection.connected
+            state.mode = connection.mode
+        } else if (window.__contentLiveReload) {
+            state.mode = window.__contentLiveReload.mode
+        }
         renderFeed(readEntries())
         renderStatus()
     }
