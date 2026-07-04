@@ -1,0 +1,8 @@
+parameters:
+    level: 8
+    paths:
+        - Classes
+    ignoreErrors:
+        -
+            identifier: method.notFound
+            path: Classes/Resolver/DevServerUrlResolver.php

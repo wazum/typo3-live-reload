@@ -1,0 +1,14 @@
+/vendor/
+/composer.lock
+/.phpunit.cache/
+/Tests/.phpunit.cache/
+/.php-cs-fixer.cache
+/Resources/Private/Vite/node_modules/
+/public/
+/var/
+/Tests/E2E/.app/
+/Tests/E2E/node_modules/
+/Tests/E2E/.seed.json
+/Tests/E2E/*.pid
+/Tests/E2E/*.log
+/Tests/E2E/test-results/

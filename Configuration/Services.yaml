@@ -1,0 +1,25 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Wazum\ContentLiveReload\:
+    resource: '../Classes/*'
+    exclude: '../Classes/AdminPanel/*'
+
+  Wazum\ContentLiveReload\Hook\ClearCachePostProcHook:
+    public: true
+
+  Wazum\ContentLiveReload\Middleware\TagInjectionMiddleware:
+    public: true
+
+  Wazum\ContentLiveReload\Resolver\DevServerUrlResolver:
+    arguments:
+      $viteAssetCollectorService: '@?Praetorius\ViteAssetCollector\Service\ViteService'
+
+  Wazum\ContentLiveReload\Broadcaster\TagBroadcasterInterface:
+    alias: Wazum\ContentLiveReload\Broadcaster\ViteDevServerBroadcaster
+
+  Wazum\ContentLiveReload\Runtime\ResponseDetacher:
+    alias: Wazum\ContentLiveReload\Runtime\SapiResponseDetacher

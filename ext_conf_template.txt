@@ -1,0 +1,11 @@
+# cat=reload; type=string; label=Comma-separated application contexts in which the extension is active (prefix match)
+activeContexts = Development
+
+# cat=reload; type=options[tagged,always]; label=Reload mode: tagged = only tabs whose cache tags intersect the broadcast, always = every connected tab
+reloadMode = tagged
+
+# cat=reload; type=string; label=Vite dev server URL reachable from PHP (broadcast target)
+viteServerInternalUrl = http://localhost:5173
+
+# cat=reload; type=string; label=Vite dev server URL reachable from the browser; empty = resolve via vite-asset-collector when installed
+viteServerPublicUrl =

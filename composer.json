@@ -1,0 +1,67 @@
+{
+    "name": "wazum/typo3-content-live-reload",
+    "type": "typo3-cms-extension",
+    "description": "Live-reloads open browser tabs when backend record changes invalidate the content they display, driven by TYPO3 cache tags and the Vite dev server.",
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://github.com/wazum/typo3-content-live-reload",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "authors": [
+        {
+            "name": "Wolfgang Klinger",
+            "email": "wolfgang@wazum.com",
+            "role": "Lead Developer"
+        }
+    ],
+    "keywords": ["typo3", "vite", "hmr", "live reload", "cache tags", "developer experience"],
+    "require": {
+        "php": "^8.2",
+        "typo3/cms-core": "^13.4 || ^14.3",
+        "typo3/cms-frontend": "^13.4 || ^14.3"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.65",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^11.5 || ^12",
+        "typo3/cms-adminpanel": "^13.4 || ^14.3",
+        "typo3/cms-install": "^13.4 || ^14.3",
+        "typo3/testing-framework": "^9.0"
+    },
+    "suggest": {
+        "praetorius/vite-asset-collector": "Resolves the Vite dev server URL automatically when viteServerPublicUrl is not configured"
+    },
+    "autoload": {
+        "psr-4": {
+            "Wazum\\ContentLiveReload\\": "Classes"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Wazum\\ContentLiveReload\\Tests\\": "Tests"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "typo3/class-alias-loader": true,
+            "typo3/cms-composer-installers": true
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "content_live_reload",
+            "web-dir": "public",
+            "version": "0.1.0",
+            "Package": {
+                "providesPackages": {}
+            }
+        }
+    },
+    "scripts": {
+        "test:unit": "phpunit -c Tests/phpunit.xml",
+        "test:functional": "typo3DatabaseDriver=pdo_sqlite phpunit -c Tests/phpunit.functional.xml",
+        "phpstan": "phpstan analyse -c phpstan.neon",
+        "cs:check": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix"
+    }
+}
