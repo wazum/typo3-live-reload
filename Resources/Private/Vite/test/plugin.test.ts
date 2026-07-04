@@ -51,6 +51,9 @@ describe('contentLiveReload', () => {
         expect(code).toContain('sessionStorage.setItem')
         expect(code).toContain('typo3:content-changed:broadcast')
         expect(code).toContain("configuration.mode === 'paused'")
+        expect(code).toContain('typo3:content-changed:connection')
+        expect(code).toContain('vite:ws:disconnect')
+        expect(code).toContain('vite:ws:connect')
     })
 
     it('broadcasts debounced deduplicated tags', async () => {

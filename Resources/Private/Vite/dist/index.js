@@ -19,6 +19,16 @@ try {
     }
 } catch {}
 if (configuration && import.meta.hot) {
+    const announceConnection = (connected) => {
+        document.dispatchEvent(
+            new CustomEvent('${EVENT_NAME}:connection', {
+                detail: { connected, mode: configuration.mode },
+            }),
+        )
+    }
+    announceConnection(true)
+    import.meta.hot.on('vite:ws:disconnect', () => announceConnection(false))
+    import.meta.hot.on('vite:ws:connect', () => announceConnection(true))
     import.meta.hot.on('${EVENT_NAME}', (payload) => {
         const broadcastTags = Array.isArray(payload && payload.tags) ? payload.tags : []
         const ownTags = Array.isArray(configuration.tags) ? configuration.tags : []

@@ -168,7 +168,11 @@ Matching works as an intersection: a broadcast tag only reloads tabs whose **ren
 
 ## Admin Panel
 
-With [EXT:adminpanel](https://packagist.org/packages/typo3/cms-adminpanel) installed, a **Content Live Reload** module appears in the frontend Admin Panel with three tabs:
+With [EXT:adminpanel](https://packagist.org/packages/typo3/cms-adminpanel) installed, a **Content Live Reload** module appears in the frontend Admin Panel.
+
+The panel bar itself shows the essentials at one glance, without opening the module: whether the dev-server connection is alive (`●` or `○ disconnected`), the active reload mode, and when this tab last updated — for example `● · tagged · updated 21:58:57`.
+
+The module itself has three tabs:
 
 **Status** – Is the extension active in this context? Which reload mode is in effect? Which dev-server URL was resolved, and by which step? Is `frontend.cache.autoTagging` on? Everything you would otherwise check with curl.
 

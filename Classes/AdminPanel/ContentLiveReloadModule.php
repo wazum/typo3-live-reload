@@ -8,11 +8,13 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\AbstractModule;
 use TYPO3\CMS\Adminpanel\ModuleApi\PageSettingsProviderInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\RequestEnricherInterface;
+use TYPO3\CMS\Adminpanel\ModuleApi\ResourceProviderInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\ShortInfoProviderInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 
-final class ContentLiveReloadModule extends AbstractModule implements RequestEnricherInterface, PageSettingsProviderInterface, ShortInfoProviderInterface
+final class ContentLiveReloadModule extends AbstractModule implements RequestEnricherInterface, PageSettingsProviderInterface, ShortInfoProviderInterface, ResourceProviderInterface
 {
     public function __construct(
         private readonly ViewFactoryInterface $viewFactory,
@@ -38,7 +40,27 @@ final class ContentLiveReloadModule extends AbstractModule implements RequestEnr
     {
         $mode = $this->configurationService->getConfigurationOption('content_live_reload', 'mode');
 
-        return 'Live reload: ' . (in_array($mode, ['tagged', 'always', 'paused'], true) ? $mode : 'default');
+        return (in_array($mode, ['tagged', 'always', 'paused'], true) ? $mode : 'tagged') . ' · waiting for the dev server';
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getJavaScriptFiles(): array
+    {
+        $script = 'EXT:content_live_reload/Resources/Public/JavaScript/admin-panel-broadcasts.js';
+        $absolutePath = GeneralUtility::getFileAbsFileName($script);
+        $modificationTime = is_file($absolutePath) ? (string)filemtime($absolutePath) : '';
+
+        return [$script . ($modificationTime !== '' ? '?' . $modificationTime : '')];
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getCssFiles(): array
+    {
+        return [];
     }
 
     public function enrich(ServerRequestInterface $request): ServerRequestInterface
