@@ -80,8 +80,27 @@
 
     document.addEventListener('typo3:content-changed:connection', (event) => {
         state.connected = event.detail.connected
-        state.mode = event.detail.mode
+        if (!state.pendingMode) state.mode = event.detail.mode
         renderStatus()
+    })
+
+    document.addEventListener('change', (event) => {
+        if (event.target?.id !== 'content_live_reload_mode') return
+        state.pendingMode = true
+        state.mode = event.target.value === '' ? 'default' : event.target.value
+        renderStatus()
+        const form = document.querySelector('form[data-typo3-role=typo3-adminPanel]')
+        if (!form?.dataset.typo3AjaxUrl) return
+        fetch(form.dataset.typo3AjaxUrl, { method: 'POST', body: new FormData(form) })
+            .then(() => {
+                const query = location.search
+                    .substring(1)
+                    .split('&')
+                    .filter((parameter) => parameter && !parameter.includes('ADMCMD_'))
+                    .join('&')
+                location.assign(location.origin + location.pathname + (query ? '?' + query : ''))
+            })
+            .catch(() => {})
     })
 
     document.addEventListener('typo3:content-changed:broadcast', (event) => {
