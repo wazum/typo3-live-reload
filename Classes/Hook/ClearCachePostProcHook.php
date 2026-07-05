@@ -5,13 +5,18 @@ declare(strict_types=1);
 namespace Wazum\ContentLiveReload\Hook;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Throwable;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use Wazum\ContentLiveReload\Collector\BroadcastTagCollector;
 use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
 use Wazum\ContentLiveReload\Event\ModifyBroadcastTagsEvent;
 
-final class ClearCachePostProcHook
+final class ClearCachePostProcHook implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     public function __construct(
         private readonly ExtensionSettings $settings,
         private readonly BroadcastTagCollector $collector,
@@ -28,20 +33,24 @@ final class ClearCachePostProcHook
             return;
         }
 
-        $tags = $this->normalizeTags((array)($parameters['tags'] ?? []));
-        if ($tags === []) {
-            return;
+        try {
+            $tags = $this->normalizeTags((array)($parameters['tags'] ?? []));
+            if ($tags === []) {
+                return;
+            }
+
+            /** @var ModifyBroadcastTagsEvent $event */
+            $event = $this->eventDispatcher->dispatch(new ModifyBroadcastTagsEvent(
+                (string)($parameters['table'] ?? ''),
+                (int)($parameters['uid'] ?? 0),
+                (int)($parameters['uid_page'] ?? 0),
+                $tags,
+            ));
+
+            $this->collector->add(...$event->getTags());
+        } catch (Throwable $exception) {
+            $this->logger?->warning('Collecting broadcast tags failed', ['exception' => $exception]);
         }
-
-        /** @var ModifyBroadcastTagsEvent $event */
-        $event = $this->eventDispatcher->dispatch(new ModifyBroadcastTagsEvent(
-            (string)($parameters['table'] ?? ''),
-            (int)($parameters['uid'] ?? 0),
-            (int)($parameters['uid_page'] ?? 0),
-            $tags,
-        ));
-
-        $this->collector->add(...$event->getTags());
     }
 
     /**

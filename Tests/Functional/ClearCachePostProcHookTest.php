@@ -6,6 +6,7 @@ namespace Wazum\ContentLiveReload\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\Test;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use RuntimeException;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -74,6 +75,32 @@ final class ClearCachePostProcHookTest extends FunctionalTestCase
         $collector->flush();
 
         self::assertSame([['pageId_42']], $this->broadcaster->received);
+    }
+
+    #[Test]
+    public function aThrowingEventListenerDoesNotBreakTheSave(): void
+    {
+        $collectorBroadcaster = new RecordingBroadcaster();
+        $collector = new BroadcastTagCollector($collectorBroadcaster, new RecordingDetacher());
+        $eventDispatcher = new class implements EventDispatcherInterface {
+            public function dispatch(object $event): object
+            {
+                throw new RuntimeException('listener failure', 1751700000);
+            }
+        };
+        $hook = new ClearCachePostProcHook(
+            $this->get(\Wazum\ContentLiveReload\Configuration\ExtensionSettings::class),
+            $collector,
+            $eventDispatcher,
+        );
+
+        $hook->postProcessClearCache(
+            ['table' => 'tt_content', 'uid' => 5, 'uid_page' => 42, 'tags' => ['tt_content_5' => true]],
+            GeneralUtility::makeInstance(DataHandler::class),
+        );
+        $collector->flush();
+
+        self::assertSame([], $collectorBroadcaster->received);
     }
 
     #[Test]
