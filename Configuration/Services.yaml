@@ -14,6 +14,14 @@ services:
   Wazum\LiveReload\Middleware\PollEndpointMiddleware:
     public: true
 
+  Wazum\LiveReload\Collector\RenderedFileCollector:
+    public: true
+
+  Wazum\LiveReload\View\CapturingViewFactory:
+    decorates: TYPO3\CMS\Core\View\ViewFactoryInterface
+    arguments:
+      $inner: '@Wazum\LiveReload\View\CapturingViewFactory.inner'
+
   Wazum\LiveReload\Middleware\TagInjectionMiddleware:
     public: true
     arguments:

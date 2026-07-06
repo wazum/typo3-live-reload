@@ -13,12 +13,14 @@ use Psr\Log\LoggerAwareTrait;
 use Throwable;
 use TYPO3\CMS\Core\Cache\CacheDataCollectorInterface;
 use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\ConsumableNonce;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Middleware\PolicyBag;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use Wazum\LiveReload\Broadcast\BroadcastLogInterface;
+use Wazum\LiveReload\Collector\RenderedFileCollector;
 use Wazum\LiveReload\Configuration\ExtensionSettings;
 use Wazum\LiveReload\Resolver\DevServerUrlResolver;
 
@@ -33,6 +35,7 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         private readonly DevServerUrlResolver $devServerUrlResolver,
         private readonly BroadcastLogInterface $broadcastLog,
         private readonly Context $context,
+        private readonly RenderedFileCollector $renderedFileCollector,
         private readonly ?object $systemResourceFactory = null,
         private readonly ?object $systemResourcePublisher = null,
     ) {
@@ -218,6 +221,10 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         $pageInformation = $request->getAttribute('frontend.page.information');
         if ($pageInformation instanceof PageInformation) {
             $tags['pageId_' . $pageInformation->getId()] = true;
+        }
+
+        foreach ($this->renderedFileCollector->fileTags(Environment::getProjectPath()) as $fileTag) {
+            $tags[$fileTag] = true;
         }
 
         return array_keys($tags);

@@ -1,0 +1,88 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Wazum\LiveReload\Fluid;
+
+use ReflectionObject;
+use Throwable;
+use TYPO3\CMS\Fluid\View\TemplatePaths;
+use TYPO3Fluid\Fluid\View\TemplatePaths as FluidTemplatePaths;
+use Wazum\LiveReload\Collector\RenderedFileCollector;
+
+final class CapturingTemplatePaths extends TemplatePaths
+{
+    private const IDENTIFIER_SUFFIX = '_livereload';
+
+    private ?RenderedFileCollector $collector = null;
+
+    public static function fromExisting(FluidTemplatePaths $source, RenderedFileCollector $collector): self
+    {
+        $instance = new self();
+        $reflection = new ReflectionObject($source);
+        foreach ($reflection->getProperties() as $property) {
+            $property->setValue($instance, $property->getValue($source));
+        }
+        $instance->collector = $collector;
+
+        return $instance;
+    }
+
+    public function getTemplateIdentifier(?string $controller = 'Default', ?string $action = 'Default'): string
+    {
+        return parent::getTemplateIdentifier($controller, $action) . self::IDENTIFIER_SUFFIX;
+    }
+
+    public function getPartialIdentifier(string $partialName): string
+    {
+        return parent::getPartialIdentifier($partialName) . self::IDENTIFIER_SUFFIX;
+    }
+
+    public function getLayoutIdentifier(string $layoutName = 'Default'): string
+    {
+        return parent::getLayoutIdentifier($layoutName) . self::IDENTIFIER_SUFFIX;
+    }
+
+    /**
+     * @param string|null $controller
+     * @param string|null $action
+     */
+    public function getTemplateSource($controller = 'Default', $action = 'Default')
+    {
+        $this->capture(fn (): ?string => $this->resolveTemplateFileForControllerAndActionAndFormat(
+            (string)($controller ?? 'Default'),
+            (string)($action ?? 'Default'),
+        ));
+
+        return parent::getTemplateSource($controller, $action);
+    }
+
+    public function getPartialSource(string $partialName): string
+    {
+        $this->capture(fn (): string => $this->getPartialPathAndFilename($partialName));
+
+        return parent::getPartialSource($partialName);
+    }
+
+    public function getLayoutSource(string $layoutName = 'Default'): string
+    {
+        $this->capture(fn (): string => $this->getLayoutPathAndFilename($layoutName));
+
+        return parent::getLayoutSource($layoutName);
+    }
+
+    private function capture(callable $resolver): void
+    {
+        if (!$this->collector instanceof RenderedFileCollector) {
+            return;
+        }
+        try {
+            $path = $resolver();
+        } catch (Throwable) {
+            return;
+        }
+        if (is_string($path) && $path !== '' && is_file($path)) {
+            $this->collector->add($path);
+        }
+    }
+}

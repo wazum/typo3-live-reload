@@ -103,6 +103,23 @@ final class TagInjectionMiddlewareTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function injectsRenderedFileTagsCollectedDuringTheRender(): void
+    {
+        $projectPath = \TYPO3\CMS\Core\Core\Environment::getProjectPath();
+        $file = $projectPath . '/local/site/Partial.html';
+        mkdir(dirname($file), 0775, true);
+        touch($file);
+        $this->get(\Wazum\LiveReload\Collector\RenderedFileCollector::class)->add($file);
+
+        $response = $this->process($this->request(), $this->htmlHandler('<html><head></head><body></body></html>'));
+
+        self::assertStringContainsString(
+            '"tags":["tt_content_5","pageId_42","file:local\/site\/Partial.html"]',
+            (string)$response->getBody(),
+        );
+    }
+
+    #[Test]
     public function appliesNonceAndCspNonceMeta(): void
     {
         $nonce = new ConsumableNonce();
