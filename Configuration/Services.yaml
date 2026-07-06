@@ -6,7 +6,11 @@ services:
 
   Wazum\LiveReload\:
     resource: '../Classes/*'
-    exclude: '../Classes/AdminPanel/*'
+    exclude:
+      - '../Classes/AdminPanel/*'
+      # Constructed at runtime by CapturingViewHelperResolver; its Fluid component
+      # interfaces do not exist on typo3fluid/fluid v2 installations.
+      - '../Classes/Fluid/CapturingComponentCollection.php'
 
   Wazum\LiveReload\Hook\ClearCachePostProcHook:
     public: true

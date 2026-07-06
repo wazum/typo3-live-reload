@@ -8,12 +8,20 @@ use ReflectionClass;
 use ReflectionObject;
 use Throwable;
 use TYPO3\CMS\Fluid\Core\ViewHelper\ViewHelperResolver;
+use TYPO3Fluid\Fluid\Core\Component\ComponentDefinitionProviderInterface;
+use TYPO3Fluid\Fluid\Core\Component\ComponentTemplateResolverInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\ViewHelperInterface;
+use TYPO3Fluid\Fluid\Core\ViewHelper\ViewHelperResolverDelegateInterface;
 use Wazum\LiveReload\Collector\RenderedFileCollector;
 
 final class CapturingViewHelperResolver extends ViewHelperResolver
 {
     private ?RenderedFileCollector $collector = null;
+
+    /**
+     * @var array<string, CapturingComponentCollection>
+     */
+    private array $capturingDelegates = [];
 
     public static function fromExisting(ViewHelperResolver $source, RenderedFileCollector $collector): self
     {
@@ -35,6 +43,22 @@ final class CapturingViewHelperResolver extends ViewHelperResolver
         $this->capture($viewHelperClassName);
 
         return parent::createViewHelperInstanceFromClassName($viewHelperClassName);
+    }
+
+    public function getResolverDelegate(string $delegateClassName): ViewHelperResolverDelegateInterface
+    {
+        $delegate = parent::getResolverDelegate($delegateClassName);
+        if (
+            !$this->collector instanceof RenderedFileCollector
+            || !interface_exists(ComponentTemplateResolverInterface::class)
+            || !$delegate instanceof ComponentTemplateResolverInterface
+            || !$delegate instanceof ComponentDefinitionProviderInterface
+        ) {
+            return $delegate;
+        }
+
+        return $this->capturingDelegates[$delegateClassName]
+            ??= new CapturingComponentCollection($delegate, $this->collector);
     }
 
     private function capture(string $viewHelperClassName): void
