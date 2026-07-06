@@ -17,7 +17,6 @@ jobs:
         exclude:
           - php: '8.2'
             typo3: '^14.3'
-    continue-on-error: ${{ matrix.typo3 == '^14.3' }}
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -46,12 +45,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
         working-directory: Resources/Private/Vite
       - run: npm test
         working-directory: Resources/Private/Vite
       - run: npm run build
         working-directory: Resources/Private/Vite
+      # The compiled plugin and poll client are committed; fail on drift.
+      - run: git diff --exit-code -- Resources/Private/Vite/dist Resources/Public/JavaScript/poll-client.js
 
   e2e:
     runs-on: ubuntu-latest
@@ -59,7 +60,6 @@ jobs:
       fail-fast: false
       matrix:
         typo3: ['^13.4', '^14.3']
-    continue-on-error: ${{ matrix.typo3 == '^14.3' }}
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -69,7 +69,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
         working-directory: Tests/E2E
       - run: npx playwright install --with-deps chromium
         working-directory: Tests/E2E
