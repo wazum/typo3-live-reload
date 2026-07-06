@@ -7,7 +7,7 @@ $EM_CONF[$_EXTKEY] = [
     'author' => 'Wolfgang Klinger',
     'author_email' => 'wolfgang@wazum.com',
     'state' => 'stable',
-    'version' => '1.0.0',
+    'version' => '2.0.0',
     'constraints' => [
         'depends' => ['typo3' => '13.4.0-14.99.99'],
         'conflicts' => [],

@@ -4,7 +4,7 @@ All notable changes to Live Reload are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project follows
 [Semantic Versioning](https://semver.org/).
 
-## 2.0.0 - Unreleased
+## 2.0.0 - 2026-07-06
 
 The package is now **`wazum/typo3-live-reload`** (previously `wazum/typo3-content-live-reload`), because
 it no longer only reloads on content changes: editing a Fluid template, partial, layout, or ViewHelper
