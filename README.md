@@ -207,7 +207,9 @@ Matching works as an intersection: a broadcast tag only reloads tabs whose **ren
 
 With [EXT:adminpanel](https://packagist.org/packages/typo3/cms-adminpanel) installed, a **Live Reload** module appears in the frontend Admin Panel.
 
-The panel bar itself shows the essentials at one glance, without opening the module: a connection dot (green and gently pulsing while the dev server is connected, a red ring when it is not, with a short flash for every received broadcast), the reload mode — but only when it differs from the normal `tagged` — and the time of this tab's last update. The everyday healthy state is just the green dot and a time like `21:58`; anything unusual (`paused`, `always`, a lost connection) announces itself by appearing. Animations respect `prefers-reduced-motion`.
+The panel bar itself shows the essentials at one glance, without opening the module: a connection dot (green and gently pulsing while the dev server is connected, a red ring when the connection was lost, with a short flash for every received broadcast), the reload mode — but only when it differs from the normal `tagged` — and the time of this tab's last update. The everyday healthy state is just the green dot and a time like `21:58`; anything unusual (`paused`, `always`, a lost connection) announces itself by appearing. Animations respect `prefers-reduced-motion`.
+
+A **gray ring** means the page never connected. This happens when the page was loaded while the dev server was down: without a dev server there is nothing to inject, so such a tab cannot hear any broadcast — including the one that would reload it. Reload the tab once after the dev server is back; from then on it heals itself.
 
 The module itself has three tabs:
 
