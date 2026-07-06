@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Middleware;
+namespace Wazum\LiveReload\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -18,15 +18,15 @@ use TYPO3\CMS\Core\Security\ContentSecurityPolicy\ConsumableNonce;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Middleware\PolicyBag;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
-use Wazum\ContentLiveReload\Broadcast\BroadcastLogInterface;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
-use Wazum\ContentLiveReload\Resolver\DevServerUrlResolver;
+use Wazum\LiveReload\Broadcast\BroadcastLogInterface;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Resolver\DevServerUrlResolver;
 
 final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const CLIENT_SCRIPT = 'EXT:content_live_reload/Resources/Public/JavaScript/poll-client.js';
+    private const CLIENT_SCRIPT = 'EXT:live_reload/Resources/Public/JavaScript/poll-client.js';
 
     public function __construct(
         private readonly ExtensionSettings $settings,
@@ -48,7 +48,7 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         try {
             return $this->inject($request, $response);
         } catch (Throwable $exception) {
-            $this->logger?->warning('Content live reload injection failed', ['exception' => $exception]);
+            $this->logger?->warning('Live reload injection failed', ['exception' => $exception]);
 
             return $response;
         }
@@ -100,8 +100,8 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         $configuration = $this->configuration($request, ['transport' => 'vite']);
         $nonceValue = $this->nonceValue($request);
         $nonceAttribute = $this->nonceAttribute($nonceValue);
-        $moduleUrl = htmlspecialchars($devServerUrl . '/@id/virtual:content-live-reload');
-        $snippet = '<script' . $nonceAttribute . '>window.__contentLiveReload = ' . $configuration . '</script>'
+        $moduleUrl = htmlspecialchars($devServerUrl . '/@id/virtual:live-reload');
+        $snippet = '<script' . $nonceAttribute . '>window.__liveReload = ' . $configuration . '</script>'
             . '<script type="module" src="' . $moduleUrl . '"' . $nonceAttribute . '></script>';
 
         return $this->withCspNonceMeta($snippet, $nonceValue, $html);
@@ -118,7 +118,7 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         $nonceValue = $this->nonceValue($request);
         $nonceAttribute = $this->nonceAttribute($nonceValue);
         $scriptUrl = htmlspecialchars($this->clientScriptUrl($request));
-        $snippet = '<script' . $nonceAttribute . '>window.__contentLiveReload = ' . $configuration . '</script>'
+        $snippet = '<script' . $nonceAttribute . '>window.__liveReload = ' . $configuration . '</script>'
             . '<script defer src="' . $scriptUrl . '"' . $nonceAttribute . '></script>';
 
         return $this->withCspNonceMeta($snippet, $nonceValue, $html);
@@ -194,7 +194,7 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
 
     private function mode(ServerRequestInterface $request): string
     {
-        $override = $request->getAttribute('content_live_reload.mode');
+        $override = $request->getAttribute('live_reload.mode');
 
         return match ($override) {
             'tagged', 'always', 'paused' => $override,

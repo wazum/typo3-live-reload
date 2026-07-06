@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Collector;
+namespace Wazum\LiveReload\Collector;
 
 use TYPO3\CMS\Core\SingletonInterface;
-use Wazum\ContentLiveReload\Broadcaster\TagBroadcasterInterface;
-use Wazum\ContentLiveReload\Runtime\ResponseDetacher;
+use Wazum\LiveReload\Broadcaster\TagBroadcasterInterface;
+use Wazum\LiveReload\Runtime\ResponseDetacher;
 
 final class BroadcastTagCollector implements SingletonInterface
 {

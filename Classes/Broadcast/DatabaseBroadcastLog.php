@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Broadcast;
+namespace Wazum\LiveReload\Broadcast;
 
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
 
 final class DatabaseBroadcastLog implements BroadcastLogInterface
 {
-    private const TABLE = 'tx_contentlivereload_broadcast';
+    private const TABLE = 'tx_livereload_broadcast';
 
     private const MAXIMUM_ROWS = 100;
 

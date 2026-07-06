@@ -1,5 +1,5 @@
 {
-    "name": "wazum/content-live-reload-e2e",
+    "name": "wazum/live-reload-e2e",
     "type": "project",
     "license": "GPL-2.0-or-later",
     "repositories": [
@@ -27,7 +27,7 @@
         "typo3/cms-frontend": "*",
         "typo3/cms-install": "*",
         "wazum/e2e-fixture": "@dev",
-        "wazum/typo3-content-live-reload": "@dev"
+        "wazum/typo3-live-reload": "@dev"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

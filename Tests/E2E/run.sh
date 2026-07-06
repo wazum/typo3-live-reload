@@ -68,9 +68,9 @@ for _ in $(seq 1 30); do
 done
 curl -fs http://127.0.0.1:8081/ >/dev/null
 for _ in $(seq 1 15); do
-    curl -fs http://127.0.0.1:5273/@id/virtual:content-live-reload >/dev/null && break
+    curl -fs http://127.0.0.1:5273/@id/virtual:live-reload >/dev/null && break
     sleep 1
 done
-curl -fs http://127.0.0.1:5273/@id/virtual:content-live-reload >/dev/null
+curl -fs http://127.0.0.1:5273/@id/virtual:live-reload >/dev/null
 
 echo "E2E environment ready"

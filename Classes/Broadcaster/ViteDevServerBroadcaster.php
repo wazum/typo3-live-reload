@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Broadcaster;
+namespace Wazum\LiveReload\Broadcaster;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Throwable;
 use TYPO3\CMS\Core\Http\RequestFactory;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
 
 final class ViteDevServerBroadcaster implements TagBroadcasterInterface, LoggerAwareInterface
 {
@@ -28,7 +28,7 @@ final class ViteDevServerBroadcaster implements TagBroadcasterInterface, LoggerA
 
         try {
             $this->requestFactory->request(
-                $this->settings->viteServerInternalUrl() . '/__typo3-content-changed',
+                $this->settings->viteServerInternalUrl() . '/__typo3-live-reload',
                 'POST',
                 [
                     'json' => ['tags' => array_values($tags)],
@@ -37,7 +37,7 @@ final class ViteDevServerBroadcaster implements TagBroadcasterInterface, LoggerA
                 ],
             );
         } catch (Throwable $exception) {
-            $this->logger?->debug('Content live reload broadcast failed', ['exception' => $exception]);
+            $this->logger?->debug('Live reload broadcast failed', ['exception' => $exception]);
         }
     }
 }

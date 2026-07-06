@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Functional;
+namespace Wazum\LiveReload\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
@@ -15,10 +15,10 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
-use Wazum\ContentLiveReload\Broadcast\DatabaseBroadcastLog;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
-use Wazum\ContentLiveReload\Middleware\PollEndpointMiddleware;
-use Wazum\ContentLiveReload\Tests\Support\SwitchesApplicationContext;
+use Wazum\LiveReload\Broadcast\DatabaseBroadcastLog;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Middleware\PollEndpointMiddleware;
+use Wazum\LiveReload\Tests\Support\SwitchesApplicationContext;
 
 final class PollEndpointMiddlewareTest extends FunctionalTestCase
 {
@@ -26,11 +26,11 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
 
     protected array $coreExtensionsToLoad = ['typo3/cms-adminpanel'];
 
-    protected array $testExtensionsToLoad = ['wazum/typo3-content-live-reload'];
+    protected array $testExtensionsToLoad = ['wazum/typo3-live-reload'];
 
     protected array $configurationToUseInTestInstance = [
         'EXTENSIONS' => [
-            'content_live_reload' => ['activeContexts' => 'Development, Testing'],
+            'live_reload' => ['activeContexts' => 'Development, Testing'],
         ],
     ];
 
@@ -53,9 +53,9 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
     #[Test]
     public function passesThroughUntouchedWhenTheContextIsNotAllowed(): void
     {
-        $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['content_live_reload']['activeContexts'] = 'Development';
+        $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['live_reload']['activeContexts'] = 'Development';
 
-        $response = $this->poll('/__content-live-reload/poll', ['since' => '0']);
+        $response = $this->poll('/__live-reload/poll', ['since' => '0']);
 
         self::assertSame('handler', (string)$response->getBody());
     }
@@ -63,7 +63,7 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
     #[Test]
     public function answersBareNotFoundWithoutALoggedInBackendUserAspectOutsideDevelopment(): void
     {
-        $response = $this->poll('/__content-live-reload/poll', ['since' => '0']);
+        $response = $this->poll('/__live-reload/poll', ['since' => '0']);
 
         self::assertSame(404, $response->getStatusCode());
         self::assertSame('', (string)$response->getBody());
@@ -74,7 +74,7 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
     {
         $this->get(Context::class)->setAspect('backend.user', new UserAspect());
 
-        $response = $this->poll('/__content-live-reload/poll', ['since' => '0']);
+        $response = $this->poll('/__live-reload/poll', ['since' => '0']);
 
         self::assertSame(404, $response->getStatusCode());
         self::assertSame('', (string)$response->getBody());
@@ -85,7 +85,7 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
     {
         $this->switchApplicationContext('Development');
 
-        $response = $this->poll('/__content-live-reload/poll', ['since' => '0']);
+        $response = $this->poll('/__live-reload/poll', ['since' => '0']);
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame(['sequence' => 0, 'broadcasts' => []], $this->payload($response));
@@ -96,7 +96,7 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
     {
         $this->logInBackendUser();
 
-        $response = $this->poll('/__content-live-reload/poll', ['since' => '0']);
+        $response = $this->poll('/__live-reload/poll', ['since' => '0']);
 
         self::assertStringContainsString('application/json', $response->getHeaderLine('Content-Type'));
         self::assertSame('no-store, private', $response->getHeaderLine('Cache-Control'));
@@ -107,12 +107,12 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
     {
         $this->logInBackendUser();
 
-        $emptyResponse = $this->poll('/__content-live-reload/poll', ['since' => '0']);
+        $emptyResponse = $this->poll('/__live-reload/poll', ['since' => '0']);
         self::assertSame(['sequence' => 0, 'broadcasts' => []], $this->payload($emptyResponse));
 
         $this->log()->append(['pageId_42']);
 
-        $response = $this->poll('/__content-live-reload/poll', ['since' => '0']);
+        $response = $this->poll('/__live-reload/poll', ['since' => '0']);
         self::assertSame(
             ['sequence' => 1, 'broadcasts' => [['sequence' => 1, 'tags' => ['pageId_42']]]],
             $this->payload($response),
@@ -124,9 +124,9 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
     {
         $this->logInBackendUser();
 
-        self::assertSame(400, $this->poll('/__content-live-reload/poll', [])->getStatusCode());
-        self::assertSame(400, $this->poll('/__content-live-reload/poll', ['since' => 'abc'])->getStatusCode());
-        self::assertSame(400, $this->poll('/__content-live-reload/poll', ['since' => '-1'])->getStatusCode());
+        self::assertSame(400, $this->poll('/__live-reload/poll', [])->getStatusCode());
+        self::assertSame(400, $this->poll('/__live-reload/poll', ['since' => 'abc'])->getStatusCode());
+        self::assertSame(400, $this->poll('/__live-reload/poll', ['since' => '-1'])->getStatusCode());
     }
 
     #[Test]
@@ -137,7 +137,7 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
         $this->log()->append(['pageId_2']);
         $this->log()->append(['pageId_3']);
 
-        $response = $this->poll('/__content-live-reload/poll', ['since' => '1']);
+        $response = $this->poll('/__live-reload/poll', ['since' => '1']);
 
         self::assertSame(
             [
@@ -157,7 +157,7 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
         $this->logInBackendUser();
         $this->log()->append(['pageId_1']);
 
-        $response = $this->poll('/__content-live-reload/poll', ['since' => '1']);
+        $response = $this->poll('/__live-reload/poll', ['since' => '1']);
 
         self::assertSame(['sequence' => 1, 'broadcasts' => []], $this->payload($response));
     }
@@ -168,7 +168,7 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
         $this->logInBackendUser();
         $this->log()->append(['pageId_1']);
 
-        $response = $this->poll('/__content-live-reload/poll', ['since' => '99']);
+        $response = $this->poll('/__live-reload/poll', ['since' => '99']);
 
         self::assertSame(['sequence' => 1, 'stale' => true], $this->payload($response));
     }
@@ -180,11 +180,11 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
         $this->log()->append(['pageId_1']);
         $this->log()->append(['pageId_2']);
         $this->log()->append(['pageId_3']);
-        $connection = $this->get(ConnectionPool::class)->getConnectionForTable('tx_contentlivereload_broadcast');
-        $connection->delete('tx_contentlivereload_broadcast', ['uid' => 1]);
-        $connection->delete('tx_contentlivereload_broadcast', ['uid' => 2]);
+        $connection = $this->get(ConnectionPool::class)->getConnectionForTable('tx_livereload_broadcast');
+        $connection->delete('tx_livereload_broadcast', ['uid' => 1]);
+        $connection->delete('tx_livereload_broadcast', ['uid' => 2]);
 
-        $response = $this->poll('/__content-live-reload/poll', ['since' => '1']);
+        $response = $this->poll('/__live-reload/poll', ['since' => '1']);
 
         self::assertSame(['sequence' => 3, 'stale' => true], $this->payload($response));
     }
@@ -193,15 +193,15 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
     public function answersStaleWhenTheGapExceedsTheRowCap(): void
     {
         $this->logInBackendUser();
-        $connection = $this->get(ConnectionPool::class)->getConnectionForTable('tx_contentlivereload_broadcast');
+        $connection = $this->get(ConnectionPool::class)->getConnectionForTable('tx_livereload_broadcast');
         foreach (range(1, 102) as $index) {
-            $connection->insert('tx_contentlivereload_broadcast', [
+            $connection->insert('tx_livereload_broadcast', [
                 'tags' => '["pageId_' . $index . '"]',
                 'crdate' => time(),
             ]);
         }
 
-        $response = $this->poll('/__content-live-reload/poll', ['since' => '1']);
+        $response = $this->poll('/__live-reload/poll', ['since' => '1']);
 
         self::assertSame(['sequence' => 102, 'stale' => true], $this->payload($response));
     }

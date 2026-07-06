@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Broadcaster;
+namespace Wazum\LiveReload\Broadcaster;
 
-use Wazum\ContentLiveReload\Broadcast\BroadcastLogInterface;
+use Wazum\LiveReload\Broadcast\BroadcastLogInterface;
 
 final class BroadcastLogWriter implements TagBroadcasterInterface
 {

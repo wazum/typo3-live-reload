@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Unit\Configuration;
+namespace Wazum\LiveReload\Tests\Unit\Configuration;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
 
 final class ExtensionSettingsTest extends TestCase
 {
@@ -141,7 +141,7 @@ final class ExtensionSettingsTest extends TestCase
     private function settingsWith(array $configuration): ExtensionSettings
     {
         $extensionConfiguration = $this->createMock(ExtensionConfiguration::class);
-        $extensionConfiguration->method('get')->with('content_live_reload')->willReturn($configuration);
+        $extensionConfiguration->method('get')->with('live_reload')->willReturn($configuration);
 
         return new ExtensionSettings($extensionConfiguration);
     }

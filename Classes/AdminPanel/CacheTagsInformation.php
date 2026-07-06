@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\AdminPanel;
+namespace Wazum\LiveReload\AdminPanel;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -22,7 +22,7 @@ final class CacheTagsInformation extends AbstractSubModule implements DataProvid
 
     public function getIdentifier(): string
     {
-        return 'content_live_reload_cachetags';
+        return 'live_reload_cachetags';
     }
 
     public function getLabel(): string
@@ -51,7 +51,7 @@ final class CacheTagsInformation extends AbstractSubModule implements DataProvid
     public function getContent(ModuleData $data): string
     {
         $view = $this->viewFactory->create(new ViewFactoryData(
-            templateRootPaths: ['EXT:content_live_reload/Resources/Private/Templates'],
+            templateRootPaths: ['EXT:live_reload/Resources/Private/Templates'],
         ));
         $view->assignMultiple($data->getArrayCopy());
 

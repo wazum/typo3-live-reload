@@ -1,5 +1,5 @@
 {
-    "name": "content-live-reload-e2e",
+    "name": "live-reload-e2e",
     "private": true,
     "type": "module",
     "scripts": {

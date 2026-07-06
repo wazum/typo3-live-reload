@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Unit\Runtime;
+namespace Wazum\LiveReload\Tests\Unit\Runtime;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Wazum\ContentLiveReload\Runtime\ResponseDetacher;
-use Wazum\ContentLiveReload\Runtime\SapiResponseDetacher;
+use Wazum\LiveReload\Runtime\ResponseDetacher;
+use Wazum\LiveReload\Runtime\SapiResponseDetacher;
 
 final class SapiResponseDetacherTest extends TestCase
 {

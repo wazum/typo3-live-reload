@@ -8,7 +8,7 @@ interface PollConfiguration extends ClientConfiguration {
 }
 
 restoreScrollPosition()
-const configuration = (window as Window & { __contentLiveReload?: PollConfiguration }).__contentLiveReload
+const configuration = (window as Window & { __liveReload?: PollConfiguration }).__liveReload
 if (configuration && typeof configuration.endpoint === 'string' && typeof configuration.interval === 'number') {
     const endpoint = configuration.endpoint
     const interval = configuration.interval

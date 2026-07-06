@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { contentLiveReload, VIRTUAL_MODULE_ID } from '../src/index'
+import { liveReload, VIRTUAL_MODULE_ID } from '../src/index'
 
 type Handler = (req: any, res: any, next: () => void) => void
 
@@ -38,43 +38,43 @@ function post(url: string, body: string) {
     return { req, res }
 }
 
-describe('contentLiveReload', () => {
+describe('liveReload', () => {
     it('serves the virtual client module referencing import.meta.hot', () => {
-        const plugin = contentLiveReload()
+        const plugin = liveReload()
         expect(plugin.resolveId!.call({} as any, VIRTUAL_MODULE_ID, undefined, {} as any)).toBe(VIRTUAL_MODULE_ID)
         const code = plugin.load!.call({} as any, VIRTUAL_MODULE_ID) as string
         expect(code).toContain('import.meta.hot')
-        expect(code).toContain('typo3:content-changed')
-        expect(code).toContain('window.__contentLiveReload')
-        expect(code).toContain('content-live-reload:scroll')
+        expect(code).toContain('typo3:live-reload')
+        expect(code).toContain('window.__liveReload')
+        expect(code).toContain('live-reload:scroll')
         expect(code).toMatch(/history\.scrollRestoration === ["']manual["']/)
         expect(code).toContain('sessionStorage.setItem')
-        expect(code).toContain('typo3:content-changed:broadcast')
+        expect(code).toContain('typo3:live-reload:broadcast')
         expect(code).toMatch(/\.mode === ["']paused["']/)
-        expect(code).toContain('typo3:content-changed:connection')
+        expect(code).toContain('typo3:live-reload:connection')
         expect(code).toContain('vite:ws:disconnect')
         expect(code).toContain('vite:ws:connect')
         expect(code).toMatch(/\.connection = /)
-        expect(code).toMatch(/BroadcastChannel\(["']content-live-reload["']\)/)
+        expect(code).toMatch(/BroadcastChannel\(["']live-reload["']\)/)
         expect(code).toContain('missedWhilePaused')
     })
 
     it('broadcasts debounced deduplicated tags', async () => {
         vi.useFakeTimers()
-        const plugin = contentLiveReload({ debounceMs: 200 })
+        const plugin = liveReload({ debounceMs: 200 })
         const { server, send, request } = fakeServer()
         ;(plugin.configureServer as any)(server)
 
-        const first = post('/__typo3-content-changed', JSON.stringify({ tags: ['tt_content_5', 'pageId_42'] }))
+        const first = post('/__typo3-live-reload', JSON.stringify({ tags: ['tt_content_5', 'pageId_42'] }))
         request(first.req, first.res)
-        const second = post('/__typo3-content-changed', JSON.stringify({ tags: ['pageId_42', 'tt_content'] }))
+        const second = post('/__typo3-live-reload', JSON.stringify({ tags: ['pageId_42', 'tt_content'] }))
         request(second.req, second.res)
         await vi.runAllTimersAsync()
 
         expect(send).toHaveBeenCalledTimes(1)
         expect(send).toHaveBeenCalledWith({
             type: 'custom',
-            event: 'typo3:content-changed',
+            event: 'typo3:live-reload',
             data: { tags: ['tt_content_5', 'pageId_42', 'tt_content'] },
         })
         expect(first.res.statusCode).toBe(204)
@@ -82,18 +82,18 @@ describe('contentLiveReload', () => {
     })
 
     it('rejects invalid payloads and wrong methods', async () => {
-        const plugin = contentLiveReload()
+        const plugin = liveReload()
         const { server, request } = fakeServer()
         ;(plugin.configureServer as any)(server)
 
-        const invalid = post('/__typo3-content-changed', '{"tags": "nope"}')
+        const invalid = post('/__typo3-live-reload', '{"tags": "nope"}')
         request(invalid.req, invalid.res)
         await vi.waitFor(() => {
             expect(invalid.res.ended).toBe(true)
         })
         expect(invalid.res.statusCode).toBe(400)
 
-        const wrongMethod = post('/__typo3-content-changed', '{}')
+        const wrongMethod = post('/__typo3-live-reload', '{}')
         wrongMethod.req.method = 'GET'
         request(wrongMethod.req, wrongMethod.res)
         expect(wrongMethod.res.statusCode).toBe(405)

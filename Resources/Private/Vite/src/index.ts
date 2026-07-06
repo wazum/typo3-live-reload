@@ -3,19 +3,19 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Plugin, ViteDevServer } from 'vite'
 
-export const VIRTUAL_MODULE_ID = 'virtual:content-live-reload'
-const EVENT_NAME = 'typo3:content-changed'
-const DEFAULT_ENDPOINT = '/__typo3-content-changed'
+export const VIRTUAL_MODULE_ID = 'virtual:live-reload'
+const EVENT_NAME = 'typo3:live-reload'
+const DEFAULT_ENDPOINT = '/__typo3-live-reload'
 const DEFAULT_DEBOUNCE_MS = 200
 
 const clientFilePath = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist', 'vite-client.js')
 
-export interface ContentLiveReloadOptions {
+export interface LiveReloadOptions {
     endpoint?: string
     debounceMs?: number
 }
 
-export function contentLiveReload(options: ContentLiveReloadOptions = {}): Plugin {
+export function liveReload(options: LiveReloadOptions = {}): Plugin {
     const endpoint = options.endpoint ?? DEFAULT_ENDPOINT
     const debounceMs = options.debounceMs ?? DEFAULT_DEBOUNCE_MS
     const pendingTags = new Set<string>()
@@ -27,11 +27,11 @@ export function contentLiveReload(options: ContentLiveReloadOptions = {}): Plugi
         timer = null
         if (tags.length === 0) return
         server.ws.send({ type: 'custom', event: EVENT_NAME, data: { tags } })
-        server.config.logger.info(`[content-live-reload] broadcast: ${tags.join(', ')}`)
+        server.config.logger.info(`[live-reload] broadcast: ${tags.join(', ')}`)
     }
 
     return {
-        name: 'content-live-reload',
+        name: 'live-reload',
         apply: 'serve',
         resolveId(id) {
             return id === VIRTUAL_MODULE_ID ? VIRTUAL_MODULE_ID : undefined
@@ -80,4 +80,4 @@ export function contentLiveReload(options: ContentLiveReloadOptions = {}): Plugi
     }
 }
 
-export default contentLiveReload
+export default liveReload

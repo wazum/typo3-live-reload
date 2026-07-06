@@ -12,7 +12,7 @@ The browsers run in a Playwright container that reaches the fixture app at `http
 
    ```
    admPanel.enable.all = 0
-   admPanel.enable.content_live_reload = 1
+   admPanel.enable.live_reload = 1
    ```
 
 6. The admin panel needs `typo3/cms-adminpanel` installed and `config.admPanel = 1` in the TypoScript. Note: the fixture seeds a root `sys_template` record that clears the site set TypoScript, so append the line to the `sys_template` `config` field, not to the set.

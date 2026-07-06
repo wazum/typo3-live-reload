@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Middleware;
+namespace Wazum\LiveReload\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -11,12 +11,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\Response;
-use Wazum\ContentLiveReload\Broadcast\BroadcastLogInterface;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Broadcast\BroadcastLogInterface;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
 
 final class PollEndpointMiddleware implements MiddlewareInterface
 {
-    public const PATH = '/__content-live-reload/poll';
+    public const PATH = '/__live-reload/poll';
 
     private const MAXIMUM_BROADCASTS = 100;
 

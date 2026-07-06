@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Wazum\ContentLiveReload\Middleware\PollEndpointMiddleware;
-use Wazum\ContentLiveReload\Middleware\TagInjectionMiddleware;
+use Wazum\LiveReload\Middleware\PollEndpointMiddleware;
+use Wazum\LiveReload\Middleware\TagInjectionMiddleware;
 
 return [
     'frontend' => [
-        'wazum/content-live-reload/poll-endpoint' => [
+        'wazum/live-reload/poll-endpoint' => [
             'target' => PollEndpointMiddleware::class,
             'after' => [
                 'typo3/cms-frontend/backend-user-authentication',
@@ -16,7 +16,7 @@ return [
                 'typo3/cms-frontend/base-redirect-resolver',
             ],
         ],
-        'wazum/content-live-reload/tag-injection' => [
+        'wazum/live-reload/tag-injection' => [
             'target' => TagInjectionMiddleware::class,
             'after' => [
                 'typo3/cms-frontend/csp-headers',

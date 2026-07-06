@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Functional;
+namespace Wazum\LiveReload\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Adminpanel\ModuleApi\ModuleData;
@@ -10,11 +10,11 @@ use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
-use Wazum\ContentLiveReload\AdminPanel\StatusInformation;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
-use Wazum\ContentLiveReload\Middleware\PollEndpointMiddleware;
-use Wazum\ContentLiveReload\Resolver\DevServerUrlResolver;
-use Wazum\ContentLiveReload\Tests\Support\SwitchesApplicationContext;
+use Wazum\LiveReload\AdminPanel\StatusInformation;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Middleware\PollEndpointMiddleware;
+use Wazum\LiveReload\Resolver\DevServerUrlResolver;
+use Wazum\LiveReload\Tests\Support\SwitchesApplicationContext;
 
 final class StatusInformationTest extends FunctionalTestCase
 {
@@ -22,11 +22,11 @@ final class StatusInformationTest extends FunctionalTestCase
 
     protected array $coreExtensionsToLoad = ['typo3/cms-adminpanel'];
 
-    protected array $testExtensionsToLoad = ['wazum/typo3-content-live-reload'];
+    protected array $testExtensionsToLoad = ['wazum/typo3-live-reload'];
 
     protected array $configurationToUseInTestInstance = [
         'EXTENSIONS' => [
-            'content_live_reload' => ['activeContexts' => 'Development, Testing'],
+            'live_reload' => ['activeContexts' => 'Development, Testing'],
         ],
     ];
 
@@ -65,7 +65,7 @@ final class StatusInformationTest extends FunctionalTestCase
 
         $content = $statusInformation->getContent(new ModuleData($data->getArrayCopy()));
 
-        self::assertStringContainsString('<td>poll — /__content-live-reload/poll, every 3000 ms</td>', $content);
+        self::assertStringContainsString('<td>poll — /__live-reload/poll, every 3000 ms</td>', $content);
     }
 
     #[Test]
@@ -78,7 +78,7 @@ final class StatusInformationTest extends FunctionalTestCase
         $content = $statusInformation->getContent(new ModuleData($data->getArrayCopy()));
 
         self::assertStringContainsString('<td>vite</td>', $content);
-        self::assertStringNotContainsString('/__content-live-reload/poll', $content);
+        self::assertStringNotContainsString('/__live-reload/poll', $content);
     }
 
     private function statusInformation(): StatusInformation

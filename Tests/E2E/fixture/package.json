@@ -1,5 +1,5 @@
 {
-    "name": "content-live-reload-e2e-app",
+    "name": "live-reload-e2e-app",
     "private": true,
     "type": "module",
     "devDependencies": {

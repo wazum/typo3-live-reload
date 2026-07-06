@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\AdminPanel;
+namespace Wazum\LiveReload\AdminPanel;
 
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\AbstractModule;
@@ -14,7 +14,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 
-final class ContentLiveReloadModule extends AbstractModule implements RequestEnricherInterface, PageSettingsProviderInterface, ShortInfoProviderInterface, ResourceProviderInterface
+final class LiveReloadModule extends AbstractModule implements RequestEnricherInterface, PageSettingsProviderInterface, ShortInfoProviderInterface, ResourceProviderInterface
 {
     public function __construct(
         private readonly ViewFactoryInterface $viewFactory,
@@ -23,7 +23,7 @@ final class ContentLiveReloadModule extends AbstractModule implements RequestEnr
 
     public function getIdentifier(): string
     {
-        return 'content_live_reload';
+        return 'live_reload';
     }
 
     public function getLabel(): string
@@ -38,7 +38,7 @@ final class ContentLiveReloadModule extends AbstractModule implements RequestEnr
 
     public function getShortInfo(): string
     {
-        $mode = $this->configurationService->getConfigurationOption('content_live_reload', 'mode');
+        $mode = $this->configurationService->getConfigurationOption('live_reload', 'mode');
 
         return in_array($mode, ['always', 'paused'], true) ? '… ' . $mode : '…';
     }
@@ -48,7 +48,7 @@ final class ContentLiveReloadModule extends AbstractModule implements RequestEnr
      */
     public function getJavaScriptFiles(): array
     {
-        return [$this->versionedResource('EXT:content_live_reload/Resources/Public/JavaScript/admin-panel-broadcasts.js')];
+        return [$this->versionedResource('EXT:live_reload/Resources/Public/JavaScript/admin-panel-broadcasts.js')];
     }
 
     /**
@@ -56,7 +56,7 @@ final class ContentLiveReloadModule extends AbstractModule implements RequestEnr
      */
     public function getCssFiles(): array
     {
-        return [$this->versionedResource('EXT:content_live_reload/Resources/Public/Css/admin-panel.css')];
+        return [$this->versionedResource('EXT:live_reload/Resources/Public/Css/admin-panel.css')];
     }
 
     private function versionedResource(string $resource): string
@@ -69,10 +69,10 @@ final class ContentLiveReloadModule extends AbstractModule implements RequestEnr
 
     public function enrich(ServerRequestInterface $request): ServerRequestInterface
     {
-        $mode = $this->configurationService->getConfigurationOption('content_live_reload', 'mode');
+        $mode = $this->configurationService->getConfigurationOption('live_reload', 'mode');
 
         return match ($mode) {
-            'tagged', 'always', 'paused' => $request->withAttribute('content_live_reload.mode', $mode),
+            'tagged', 'always', 'paused' => $request->withAttribute('live_reload.mode', $mode),
             default => $request,
         };
     }
@@ -80,9 +80,9 @@ final class ContentLiveReloadModule extends AbstractModule implements RequestEnr
     public function getPageSettings(): string
     {
         $view = $this->viewFactory->create(new ViewFactoryData(
-            templateRootPaths: ['EXT:content_live_reload/Resources/Private/Templates'],
+            templateRootPaths: ['EXT:live_reload/Resources/Private/Templates'],
         ));
-        $view->assign('mode', $this->configurationService->getConfigurationOption('content_live_reload', 'mode'));
+        $view->assign('mode', $this->configurationService->getConfigurationOption('live_reload', 'mode'));
 
         return $view->render('AdminPanel/Settings');
     }

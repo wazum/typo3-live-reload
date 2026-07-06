@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Broadcaster;
+namespace Wazum\LiveReload\Broadcaster;
 
 interface TagBroadcasterInterface
 {

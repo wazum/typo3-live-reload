@@ -3,18 +3,18 @@
 declare(strict_types=1);
 
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use Wazum\ContentLiveReload\AdminPanel\BroadcastsInformation;
-use Wazum\ContentLiveReload\AdminPanel\CacheTagsInformation;
-use Wazum\ContentLiveReload\AdminPanel\ContentLiveReloadModule;
-use Wazum\ContentLiveReload\AdminPanel\StatusInformation;
-use Wazum\ContentLiveReload\Hook\ClearCachePostProcHook;
+use Wazum\LiveReload\AdminPanel\BroadcastsInformation;
+use Wazum\LiveReload\AdminPanel\CacheTagsInformation;
+use Wazum\LiveReload\AdminPanel\LiveReloadModule;
+use Wazum\LiveReload\AdminPanel\StatusInformation;
+use Wazum\LiveReload\Hook\ClearCachePostProcHook;
 
-$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['clearCachePostProc']['content_live_reload']
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['clearCachePostProc']['live_reload']
     = ClearCachePostProcHook::class . '->postProcessClearCache';
 
 if (ExtensionManagementUtility::isLoaded('adminpanel')) {
-    $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules']['content_live_reload'] = [
-        'module' => ContentLiveReloadModule::class,
+    $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules']['live_reload'] = [
+        'module' => LiveReloadModule::class,
         'after' => ['info'],
         'submodules' => [
             'status' => [

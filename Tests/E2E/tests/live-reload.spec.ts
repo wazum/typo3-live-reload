@@ -16,12 +16,12 @@ function updateContent(uid: number, header: string) {
 
 test('pages carry their cache tags and the client module', async ({ page }) => {
     await page.goto('/')
-    const config = await page.evaluate(() => (window as any).__contentLiveReload)
+    const config = await page.evaluate(() => (window as any).__liveReload)
     expect(config.mode).toBe('tagged')
     expect(config.tags).toContain('pageId_1')
     expect(config.tags).toContain(`tt_content_${seed.homeContentUid}`)
-    const moduleSource = await page.getAttribute('script[src*="virtual:content-live-reload"]', 'src')
-    expect(moduleSource).toBe('http://127.0.0.1:5273/@id/virtual:content-live-reload')
+    const moduleSource = await page.getAttribute('script[src*="virtual:live-reload"]', 'src')
+    expect(moduleSource).toBe('http://127.0.0.1:5273/@id/virtual:live-reload')
 })
 
 test('editing a record reloads only the affected tab', async ({ browser }) => {
@@ -42,7 +42,7 @@ test('editing a record reloads only the affected tab', async ({ browser }) => {
         () =>
             new Promise<{ matched: boolean }>((resolveBroadcast) => {
                 document.addEventListener(
-                    'typo3:content-changed:broadcast',
+                    'typo3:live-reload:broadcast',
                     (event) => resolveBroadcast({ matched: (event as CustomEvent).detail.matched }),
                     { once: true },
                 )

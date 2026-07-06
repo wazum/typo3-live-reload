@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Support;
+namespace Wazum\LiveReload\Tests\Support;
 
-use Wazum\ContentLiveReload\Broadcaster\TagBroadcasterInterface;
+use Wazum\LiveReload\Broadcaster\TagBroadcasterInterface;
 
 final class RecordingBroadcaster implements TagBroadcasterInterface
 {

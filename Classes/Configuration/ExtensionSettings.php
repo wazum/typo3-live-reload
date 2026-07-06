@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Configuration;
+namespace Wazum\LiveReload\Configuration;
 
 use Throwable;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
@@ -122,7 +122,7 @@ final class ExtensionSettings
         }
 
         try {
-            $configuration = $this->extensionConfiguration->get('content_live_reload');
+            $configuration = $this->extensionConfiguration->get('live_reload');
         } catch (Throwable) {
             $configuration = [];
         }

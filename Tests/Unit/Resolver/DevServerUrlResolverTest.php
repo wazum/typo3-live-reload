@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Unit\Resolver;
+namespace Wazum\LiveReload\Tests\Unit\Resolver;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -11,8 +11,8 @@ use RuntimeException;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
-use Wazum\ContentLiveReload\Resolver\DevServerUrlResolver;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Resolver\DevServerUrlResolver;
 
 final class DevServerUrlResolverTest extends TestCase
 {

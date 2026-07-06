@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { contentLiveReload, VIRTUAL_MODULE_ID } from '../src/index'
+import { liveReload, VIRTUAL_MODULE_ID } from '../src/index'
 
 type Listener = (event: { data: unknown }) => void
 
@@ -42,13 +42,13 @@ async function bootViteClient(configuration: Record<string, unknown>): Promise<B
             handlers.set(event, [...(handlers.get(event) ?? []), handler])
         },
     }
-    ;(window as any).__contentLiveReload = configuration
-    const plugin = contentLiveReload()
+    ;(window as any).__liveReload = configuration
+    const plugin = liveReload()
     const code = plugin.load!.call({} as any, VIRTUAL_MODULE_ID) as string
     new Function('__hot__', code.replaceAll('import.meta.hot', '__hot__'))(hot)
     return {
         deliverBroadcast: async (tags) => {
-            for (const handler of handlers.get('typo3:content-changed') ?? []) handler({ tags })
+            for (const handler of handlers.get('typo3:live-reload') ?? []) handler({ tags })
         },
         emit(event: string, payload?: unknown) {
             for (const handler of handlers.get(event) ?? []) handler(payload)
@@ -99,9 +99,9 @@ async function bootPollClientWithServer(
     const initialSequence = (configuration.sequence as number | undefined) ?? 5
     const server = createPollServer(initialSequence)
     vi.stubGlobal('fetch', server.fetchMock)
-    ;(window as any).__contentLiveReload = {
+    ;(window as any).__liveReload = {
         transport: 'poll',
-        endpoint: '/__content-live-reload/poll',
+        endpoint: '/__live-reload/poll',
         interval: pollInterval,
         sequence: initialSequence,
         ...configuration,
@@ -169,14 +169,14 @@ describe.each(transports)('client reload behavior via $name', ({ boot }) => {
     it('stores the scroll position before reloading', async () => {
         const client = await boot({ tags: ['pageId_1'], mode: 'tagged' })
         await client.deliverBroadcast(['pageId_1'])
-        const stored = JSON.parse(sessionStorage.getItem('content-live-reload:scroll') ?? 'null')
+        const stored = JSON.parse(sessionStorage.getItem('live-reload:scroll') ?? 'null')
         expect(stored).toMatchObject({ href: window.location.href })
     })
 
     it('does not reload without tag overlap and reports the verdict', async () => {
         const verdicts: { matched: boolean; mode: string }[] = []
         document.addEventListener(
-            'typo3:content-changed:broadcast',
+            'typo3:live-reload:broadcast',
             (event) => verdicts.push((event as CustomEvent).detail),
             { once: true },
         )
@@ -222,7 +222,7 @@ describe.each(transports)('client reload behavior via $name', ({ boot }) => {
     })
 
     it('lets a listener cancel the reload', async () => {
-        document.addEventListener('typo3:content-changed', (event) => event.preventDefault(), { once: true })
+        document.addEventListener('typo3:live-reload', (event) => event.preventDefault(), { once: true })
         const client = await boot({ tags: ['pageId_1'], mode: 'tagged' })
         await client.deliverBroadcast(['pageId_1'])
         expect(reload).not.toHaveBeenCalled()
@@ -231,13 +231,13 @@ describe.each(transports)('client reload behavior via $name', ({ boot }) => {
     it('restores the stored scroll position after a reload', async () => {
         history.scrollRestoration = 'manual'
         sessionStorage.setItem(
-            'content-live-reload:scroll',
+            'live-reload:scroll',
             JSON.stringify({ x: 0, y: 250, href: window.location.href }),
         )
         const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
         await boot({ tags: ['pageId_1'], mode: 'tagged' })
         expect(scrollTo).toHaveBeenCalledWith(0, 250)
-        expect(sessionStorage.getItem('content-live-reload:scroll')).toBeNull()
+        expect(sessionStorage.getItem('live-reload:scroll')).toBeNull()
     })
 })
 
@@ -245,13 +245,13 @@ describe('vite client transport', () => {
     it('announces connection changes from the vite websocket', async () => {
         const states: { connected: boolean }[] = []
         const record = (event: Event) => states.push((event as CustomEvent).detail)
-        document.addEventListener('typo3:content-changed:connection', record)
+        document.addEventListener('typo3:live-reload:connection', record)
         const client = (await bootViteClient({ tags: ['pageId_1'], mode: 'tagged' })) as BootedClient & {
             emit(event: string, payload?: unknown): void
         }
         client.emit('vite:ws:disconnect')
         client.emit('vite:ws:connect')
-        document.removeEventListener('typo3:content-changed:connection', record)
+        document.removeEventListener('typo3:live-reload:connection', record)
         expect(states.map((state) => state.connected)).toEqual([true, false, true])
     })
 })
@@ -260,7 +260,7 @@ describe('poll client transport', () => {
     it('starts polling from the configured sequence with same-origin credentials', async () => {
         const client = await bootPollClientWithServer({ tags: ['pageId_1'], mode: 'tagged', sequence: 7 })
         expect(client.server.fetchMock).toHaveBeenCalledTimes(1)
-        expect(client.server.fetchMock).toHaveBeenCalledWith('/__content-live-reload/poll?since=7', {
+        expect(client.server.fetchMock).toHaveBeenCalledWith('/__live-reload/poll?since=7', {
             credentials: 'same-origin',
         })
         expect(reload).not.toHaveBeenCalled()
@@ -270,7 +270,7 @@ describe('poll client transport', () => {
         const client = await bootPollClientWithServer({ tags: ['pageId_1'], mode: 'tagged', sequence: 5 })
         await client.deliverBroadcast(['tt_content_99'])
         await client.advance(pollInterval)
-        expect(client.server.fetchMock).toHaveBeenLastCalledWith('/__content-live-reload/poll?since=6', {
+        expect(client.server.fetchMock).toHaveBeenLastCalledWith('/__live-reload/poll?since=6', {
             credentials: 'same-origin',
         })
     })
@@ -278,13 +278,13 @@ describe('poll client transport', () => {
     it('announces a lost connection after a failed poll and recovery on the next success', async () => {
         const states: boolean[] = []
         const record = (event: Event) => states.push((event as CustomEvent).detail.connected)
-        document.addEventListener('typo3:content-changed:connection', record)
+        document.addEventListener('typo3:live-reload:connection', record)
         const client = await bootPollClientWithServer({ tags: ['pageId_1'], mode: 'tagged' })
         client.server.fail(true)
         await client.advance(pollInterval)
         client.server.fail(false)
         await client.advance(pollInterval)
-        document.removeEventListener('typo3:content-changed:connection', record)
+        document.removeEventListener('typo3:live-reload:connection', record)
         expect(states).toEqual([true, false, true])
     })
 

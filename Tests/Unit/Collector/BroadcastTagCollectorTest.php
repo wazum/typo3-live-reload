@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Unit\Collector;
+namespace Wazum\LiveReload\Tests\Unit\Collector;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Wazum\ContentLiveReload\Collector\BroadcastTagCollector;
-use Wazum\ContentLiveReload\Tests\Support\RecordingBroadcaster;
-use Wazum\ContentLiveReload\Tests\Support\RecordingDetacher;
+use Wazum\LiveReload\Collector\BroadcastTagCollector;
+use Wazum\LiveReload\Tests\Support\RecordingBroadcaster;
+use Wazum\LiveReload\Tests\Support\RecordingDetacher;
 
 final class BroadcastTagCollectorTest extends TestCase
 {

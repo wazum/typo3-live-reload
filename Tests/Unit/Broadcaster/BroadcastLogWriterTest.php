@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Unit\Broadcaster;
+namespace Wazum\LiveReload\Tests\Unit\Broadcaster;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Wazum\ContentLiveReload\Broadcaster\BroadcastLogWriter;
-use Wazum\ContentLiveReload\Tests\Support\InMemoryBroadcastLog;
+use Wazum\LiveReload\Broadcaster\BroadcastLogWriter;
+use Wazum\LiveReload\Tests\Support\InMemoryBroadcastLog;
 
 final class BroadcastLogWriterTest extends TestCase
 {

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Hook;
+namespace Wazum\LiveReload\Hook;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Throwable;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
-use Wazum\ContentLiveReload\Collector\BroadcastTagCollector;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
-use Wazum\ContentLiveReload\Event\ModifyBroadcastTagsEvent;
+use Wazum\LiveReload\Collector\BroadcastTagCollector;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Event\ModifyBroadcastTagsEvent;
 
 final class ClearCachePostProcHook implements LoggerAwareInterface
 {

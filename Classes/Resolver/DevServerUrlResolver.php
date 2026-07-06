@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Resolver;
+namespace Wazum\LiveReload\Resolver;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
 
 final class DevServerUrlResolver
 {

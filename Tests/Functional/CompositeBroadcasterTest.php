@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Functional;
+namespace Wazum\LiveReload\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
-use Wazum\ContentLiveReload\Broadcast\DatabaseBroadcastLog;
-use Wazum\ContentLiveReload\Broadcaster\BroadcastLogWriter;
-use Wazum\ContentLiveReload\Broadcaster\CompositeBroadcaster;
-use Wazum\ContentLiveReload\Broadcaster\ViteDevServerBroadcaster;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
-use Wazum\ContentLiveReload\Tests\Support\SwitchesApplicationContext;
+use Wazum\LiveReload\Broadcast\DatabaseBroadcastLog;
+use Wazum\LiveReload\Broadcaster\BroadcastLogWriter;
+use Wazum\LiveReload\Broadcaster\CompositeBroadcaster;
+use Wazum\LiveReload\Broadcaster\ViteDevServerBroadcaster;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Tests\Support\SwitchesApplicationContext;
 
 final class CompositeBroadcasterTest extends FunctionalTestCase
 {
@@ -21,11 +21,11 @@ final class CompositeBroadcasterTest extends FunctionalTestCase
 
     protected array $coreExtensionsToLoad = ['typo3/cms-adminpanel'];
 
-    protected array $testExtensionsToLoad = ['wazum/typo3-content-live-reload'];
+    protected array $testExtensionsToLoad = ['wazum/typo3-live-reload'];
 
     protected array $configurationToUseInTestInstance = [
         'EXTENSIONS' => [
-            'content_live_reload' => ['activeContexts' => 'Development, Testing'],
+            'live_reload' => ['activeContexts' => 'Development, Testing'],
         ],
     ];
 

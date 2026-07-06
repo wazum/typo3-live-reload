@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Unit\Broadcaster;
+namespace Wazum\LiveReload\Tests\Unit\Broadcaster;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Http\RequestFactory;
-use Wazum\ContentLiveReload\Broadcaster\ViteDevServerBroadcaster;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Broadcaster\ViteDevServerBroadcaster;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
 
 final class ViteDevServerBroadcasterTest extends TestCase
 {
@@ -21,7 +21,7 @@ final class ViteDevServerBroadcasterTest extends TestCase
         $requestFactory->expects(self::once())
             ->method('request')
             ->with(
-                'http://vite:5174/__typo3-content-changed',
+                'http://vite:5174/__typo3-live-reload',
                 'POST',
                 self::callback(static function (array $options): bool {
                     return $options['json'] === ['tags' => ['tt_content_5', 'pageId_42']]

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\AdminPanel;
+namespace Wazum\LiveReload\AdminPanel;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,9 +13,9 @@ use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
-use Wazum\ContentLiveReload\Middleware\PollEndpointMiddleware;
-use Wazum\ContentLiveReload\Resolver\DevServerUrlResolver;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Middleware\PollEndpointMiddleware;
+use Wazum\LiveReload\Resolver\DevServerUrlResolver;
 
 final class StatusInformation extends AbstractSubModule implements DataProviderInterface
 {
@@ -29,7 +29,7 @@ final class StatusInformation extends AbstractSubModule implements DataProviderI
 
     public function getIdentifier(): string
     {
-        return 'content_live_reload_status';
+        return 'live_reload_status';
     }
 
     public function getLabel(): string
@@ -40,7 +40,7 @@ final class StatusInformation extends AbstractSubModule implements DataProviderI
     public function getDataToStore(ServerRequestInterface $request, ?ResponseInterface $response = null): ModuleData
     {
         $resolution = $this->devServerUrlResolver->explain($request);
-        $modeOverride = $request->getAttribute('content_live_reload.mode');
+        $modeOverride = $request->getAttribute('live_reload.mode');
 
         return new ModuleData([
             'contextAllowed' => $this->settings->contextAllowed(),
@@ -61,7 +61,7 @@ final class StatusInformation extends AbstractSubModule implements DataProviderI
     public function getContent(ModuleData $data): string
     {
         $view = $this->viewFactory->create(new ViewFactoryData(
-            templateRootPaths: ['EXT:content_live_reload/Resources/Private/Templates'],
+            templateRootPaths: ['EXT:live_reload/Resources/Private/Templates'],
         ));
         $view->assignMultiple($data->getArrayCopy());
 

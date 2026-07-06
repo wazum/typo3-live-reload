@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Functional;
+namespace Wazum\LiveReload\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
@@ -20,8 +20,8 @@ use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\ConsumableNonce;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
-use Wazum\ContentLiveReload\Middleware\TagInjectionMiddleware;
-use Wazum\ContentLiveReload\Tests\Support\SwitchesApplicationContext;
+use Wazum\LiveReload\Middleware\TagInjectionMiddleware;
+use Wazum\LiveReload\Tests\Support\SwitchesApplicationContext;
 
 final class TagInjectionMiddlewareTest extends FunctionalTestCase
 {
@@ -29,11 +29,11 @@ final class TagInjectionMiddlewareTest extends FunctionalTestCase
 
     protected array $coreExtensionsToLoad = ['typo3/cms-adminpanel'];
 
-    protected array $testExtensionsToLoad = ['wazum/typo3-content-live-reload'];
+    protected array $testExtensionsToLoad = ['wazum/typo3-live-reload'];
 
     protected array $configurationToUseInTestInstance = [
         'EXTENSIONS' => [
-            'content_live_reload' => [
+            'live_reload' => [
                 'activeContexts' => 'Development, Testing',
                 'viteServerPublicUrl' => 'https://vite.example:5173',
             ],
@@ -59,14 +59,14 @@ final class TagInjectionMiddlewareTest extends FunctionalTestCase
 
         $html = (string)$response->getBody();
         $headEnd = strpos($html, '</head>');
-        $configPosition = strpos($html, 'window.__contentLiveReload');
+        $configPosition = strpos($html, 'window.__liveReload');
         self::assertNotFalse($configPosition);
         self::assertLessThan($headEnd, $configPosition);
         self::assertStringContainsString('"tags":["tt_content_5","pageId_42"]', $html);
         self::assertStringContainsString('"mode":"tagged"', $html);
         self::assertStringContainsString('"transport":"vite"', $html);
         self::assertStringContainsString(
-            '<script type="module" src="https://vite.example:5173/@id/virtual:content-live-reload"',
+            '<script type="module" src="https://vite.example:5173/@id/virtual:live-reload"',
             $html,
         );
     }
@@ -75,13 +75,13 @@ final class TagInjectionMiddlewareTest extends FunctionalTestCase
     public function adminPanelModeOverrideReplacesConfiguredMode(): void
     {
         $overridden = $this->process(
-            $this->request()->withAttribute('content_live_reload.mode', 'paused'),
+            $this->request()->withAttribute('live_reload.mode', 'paused'),
             $this->htmlHandler('<html><head></head><body></body></html>'),
         );
         self::assertStringContainsString('"mode":"paused"', (string)$overridden->getBody());
 
         $unknown = $this->process(
-            $this->request()->withAttribute('content_live_reload.mode', 'bogus'),
+            $this->request()->withAttribute('live_reload.mode', 'bogus'),
             $this->htmlHandler('<html><head></head><body></body></html>'),
         );
         self::assertStringContainsString('"mode":"tagged"', (string)$unknown->getBody());
@@ -147,7 +147,7 @@ final class TagInjectionMiddlewareTest extends FunctionalTestCase
     public function fallsBackToBodyEndWithoutHeadAndSkipsWithoutBothMarkers(): void
     {
         $withBodyOnly = $this->process($this->request(), $this->htmlHandler('<html><body>x</body></html>'));
-        self::assertStringContainsString('window.__contentLiveReload', (string)$withBodyOnly->getBody());
+        self::assertStringContainsString('window.__liveReload', (string)$withBodyOnly->getBody());
 
         $fragment = $this->process($this->request(), $this->htmlHandler('<div>fragment</div>'));
         self::assertSame('<div>fragment</div>', (string)$fragment->getBody());
@@ -165,21 +165,21 @@ final class TagInjectionMiddlewareTest extends FunctionalTestCase
 
         $response = $this->process($this->request(), $handler);
 
-        self::assertStringNotContainsString('__contentLiveReload', (string)$response->getBody());
+        self::assertStringNotContainsString('__liveReload', (string)$response->getBody());
     }
 
     #[Test]
     public function fallsBackToPollTransportWhenNoDevServerUrlIsResolvable(): void
     {
-        $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['content_live_reload']['viteServerPublicUrl'] = '';
+        $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['live_reload']['viteServerPublicUrl'] = '';
 
         $response = $this->process($this->request(), $this->htmlHandler('<html><head></head><body></body></html>'));
 
         $html = (string)$response->getBody();
         self::assertStringContainsString('"transport":"poll"', $html);
-        self::assertStringContainsString('"endpoint":"\/__content-live-reload\/poll"', $html);
+        self::assertStringContainsString('"endpoint":"\/__live-reload\/poll"', $html);
         self::assertMatchesRegularExpression('#<script defer src="[^"]*poll-client\.js[^"]*"></script>#', $html);
-        self::assertStringNotContainsString('virtual:content-live-reload', $html);
+        self::assertStringNotContainsString('virtual:live-reload', $html);
     }
 
     private function policyBagFor(ConsumableNonce $nonce): \TYPO3\CMS\Core\Security\ContentSecurityPolicy\Middleware\PolicyBag

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Runtime;
+namespace Wazum\LiveReload\Runtime;
 
 interface ResponseDetacher
 {

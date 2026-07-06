@@ -1,7 +1,7 @@
 {
-  "name": "@wazum/typo3-content-live-reload-vite",
+  "name": "@wazum/typo3-live-reload-vite",
   "version": "0.1.0",
-  "description": "Vite plugin broadcasting TYPO3 content changes to connected dev clients.",
+  "description": "Vite plugin broadcasting TYPO3 content and template file changes to connected dev clients.",
   "license": "GPL-2.0-or-later",
   "author": "Wolfgang Klinger <wolfgang@wazum.com>",
   "type": "module",

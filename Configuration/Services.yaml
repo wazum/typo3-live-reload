@@ -4,31 +4,31 @@ services:
     autoconfigure: true
     public: false
 
-  Wazum\ContentLiveReload\:
+  Wazum\LiveReload\:
     resource: '../Classes/*'
     exclude: '../Classes/AdminPanel/*'
 
-  Wazum\ContentLiveReload\Hook\ClearCachePostProcHook:
+  Wazum\LiveReload\Hook\ClearCachePostProcHook:
     public: true
 
-  Wazum\ContentLiveReload\Middleware\PollEndpointMiddleware:
+  Wazum\LiveReload\Middleware\PollEndpointMiddleware:
     public: true
 
-  Wazum\ContentLiveReload\Middleware\TagInjectionMiddleware:
+  Wazum\LiveReload\Middleware\TagInjectionMiddleware:
     public: true
     arguments:
       $systemResourceFactory: '@?TYPO3\CMS\Core\SystemResource\SystemResourceFactory'
       $systemResourcePublisher: '@?TYPO3\CMS\Core\SystemResource\Publishing\SystemResourcePublisherInterface'
 
-  Wazum\ContentLiveReload\Resolver\DevServerUrlResolver:
+  Wazum\LiveReload\Resolver\DevServerUrlResolver:
     arguments:
       $viteAssetCollectorService: '@?Praetorius\ViteAssetCollector\Service\ViteService'
 
-  Wazum\ContentLiveReload\Broadcast\BroadcastLogInterface:
-    alias: Wazum\ContentLiveReload\Broadcast\DatabaseBroadcastLog
+  Wazum\LiveReload\Broadcast\BroadcastLogInterface:
+    alias: Wazum\LiveReload\Broadcast\DatabaseBroadcastLog
 
-  Wazum\ContentLiveReload\Broadcaster\TagBroadcasterInterface:
-    alias: Wazum\ContentLiveReload\Broadcaster\CompositeBroadcaster
+  Wazum\LiveReload\Broadcaster\TagBroadcasterInterface:
+    alias: Wazum\LiveReload\Broadcaster\CompositeBroadcaster
 
-  Wazum\ContentLiveReload\Runtime\ResponseDetacher:
-    alias: Wazum\ContentLiveReload\Runtime\SapiResponseDetacher
+  Wazum\LiveReload\Runtime\ResponseDetacher:
+    alias: Wazum\LiveReload\Runtime\SapiResponseDetacher

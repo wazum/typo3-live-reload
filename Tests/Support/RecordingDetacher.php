@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Support;
+namespace Wazum\LiveReload\Tests\Support;
 
-use Wazum\ContentLiveReload\Runtime\ResponseDetacher;
+use Wazum\LiveReload\Runtime\ResponseDetacher;
 
 final class RecordingDetacher implements ResponseDetacher
 {

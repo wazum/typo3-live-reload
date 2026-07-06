@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Broadcast;
+namespace Wazum\LiveReload\Broadcast;
 
 interface BroadcastLogInterface
 {

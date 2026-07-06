@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Functional;
+namespace Wazum\LiveReload\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
-use Wazum\ContentLiveReload\Broadcast\DatabaseBroadcastLog;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Broadcast\DatabaseBroadcastLog;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
 
 final class DatabaseBroadcastLogTest extends FunctionalTestCase
 {
     protected array $coreExtensionsToLoad = ['typo3/cms-adminpanel'];
 
-    protected array $testExtensionsToLoad = ['wazum/typo3-content-live-reload'];
+    protected array $testExtensionsToLoad = ['wazum/typo3-live-reload'];
 
     protected array $configurationToUseInTestInstance = [
         'EXTENSIONS' => [
-            'content_live_reload' => ['activeContexts' => 'Testing'],
+            'live_reload' => ['activeContexts' => 'Testing'],
         ],
     ];
 
@@ -85,8 +85,8 @@ final class DatabaseBroadcastLogTest extends FunctionalTestCase
     #[Test]
     public function appendPrunesRowsOlderThanTheRetentionWindow(): void
     {
-        $connection = $this->get(ConnectionPool::class)->getConnectionForTable('tx_contentlivereload_broadcast');
-        $connection->insert('tx_contentlivereload_broadcast', [
+        $connection = $this->get(ConnectionPool::class)->getConnectionForTable('tx_livereload_broadcast');
+        $connection->insert('tx_livereload_broadcast', [
             'tags' => '["pageId_old"]',
             'crdate' => time() - 3600,
         ]);

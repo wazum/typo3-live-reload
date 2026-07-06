@@ -1,11 +1,11 @@
-<h1 align="center">Content Live Reload</h1>
+<h1 align="center">Live Reload</h1>
 <p align="center"><em>Save a record in the backend. The right browser tabs reload. Nothing else moves.</em></p>
 <br>
 
-[![Tests](https://github.com/wazum/typo3-content-live-reload/workflows/Tests/badge.svg)](https://github.com/wazum/typo3-content-live-reload/actions)
+[![Tests](https://github.com/wazum/typo3-live-reload/workflows/Tests/badge.svg)](https://github.com/wazum/typo3-live-reload/actions)
 [![PHP](https://img.shields.io/badge/PHP-8.2%20|%208.3%20|%208.4-blue.svg)](https://www.php.net/)
 [![TYPO3](https://img.shields.io/badge/TYPO3-13.4%20|%2014.3%2B-orange.svg)](https://typo3.org/)
-[![Total Downloads](https://img.shields.io/packagist/dt/wazum/typo3-content-live-reload.svg)](https://packagist.org/packages/wazum/typo3-content-live-reload)
+[![Total Downloads](https://img.shields.io/packagist/dt/wazum/typo3-live-reload.svg)](https://packagist.org/packages/wazum/typo3-live-reload)
 [![License](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
 
 When an editor saves a content element, a page, or a news record, every open frontend tab that shows this record reloads by itself. Tabs that show other pages keep their scroll position, form state, and open dialogs. TYPO3's own cache tags decide which tabs are affected: each page knows the tags it rendered, each save knows the tags it flushed, and each tab compares the two.
@@ -19,7 +19,7 @@ After `composer require` it works in development right away. A Vite dev server i
 ## Installation
 
 ```bash
-composer require --dev wazum/typo3-content-live-reload
+composer require --dev wazum/typo3-live-reload
 ```
 
 That is the whole install. In the Development context it is active at once: open some frontend pages, edit content in the backend, and the right tabs reload. Without a Vite dev server the tabs poll a small endpoint on their own.
@@ -28,12 +28,12 @@ If you do run a Vite dev server, add the bundled plugin to `vite.config.ts` and 
 
 ```ts
 import { defineConfig } from 'vite'
-import { contentLiveReload } from './vendor/wazum/typo3-content-live-reload/Resources/Private/Vite/dist/index.js'
+import { liveReload } from './vendor/wazum/typo3-live-reload/Resources/Private/Vite/dist/index.js'
 
 export default defineConfig({
     plugins: [
         // ...your other plugins
-        contentLiveReload(),
+        liveReload(),
     ],
 })
 ```
@@ -50,7 +50,7 @@ The import path is relative to `vite.config.ts` — adjust it if your config fil
 
 **Scroll position stays** – Browsers restore it on reload by default; when a framework (for example Turbo) sets `history.scrollRestoration = 'manual'`, the client restores it itself.
 
-**You can take over the reload** – A cancelable `typo3:content-changed` DOM event fires before each reload. Cancel it and update the DOM with Turbo instead of reloading.
+**You can take over the reload** – A cancelable `typo3:live-reload` DOM event fires before each reload. Cancel it and update the DOM with Turbo instead of reloading.
 
 **Extra tags per event** – A PSR-14 event lets you broadcast tags that other extensions flush on their own, for example `tx_news_uid_*`.
 
@@ -64,12 +64,12 @@ The import path is relative to `vite.config.ts` — adjust it if your config fil
 ┌──────────────────────────────┐          ┌──────────────────────────────┐
 │          TYPO3 (PHP)         │          │       Vite dev server        │
 │                              │          │                              │
-│  DataHandler save/delete     │   POST   │  contentLiveReload() plugin  │
+│  DataHandler save/delete     │   POST   │  liveReload() plugin  │
 │   └─ flushed cache tags ────────────────▶   debounce → broadcast       │
 │                              │          │        over HMR ws           │
 │  middleware injects the      │          │           │                  │
 │  page's own cache tags       │  HMR ws  │           ▼                  │
-│  + the client module    ◀────────────── virtual:content-live-reload    │
+│  + the client module    ◀────────────── virtual:live-reload    │
 └──────────────────────────────┘          └──────────────────────────────┘
                                                        │
                                                        ▼
@@ -77,7 +77,7 @@ The import path is relative to `vite.config.ts` — adjust it if your config fil
                                      → cancelable event → reload
 ```
 
-1. **In:** a middleware reads the cache tags of the current page (from TYPO3's frontend cache data collector, plus a `pageId_<uid>` fallback) and writes them into the page as `window.__contentLiveReload`, together with a `<script type="module">` that the Vite dev server serves.
+1. **In:** a middleware reads the cache tags of the current page (from TYPO3's frontend cache data collector, plus a `pageId_<uid>` fallback) and writes them into the page as `window.__liveReload`, together with a `<script type="module">` that the Vite dev server serves.
 2. **Out:** a `clearCachePostProc` hook collects the tags TYPO3 flushes for a saved record and posts them to the dev server — after the editor's response is already sent.
 3. The dev server broadcasts once per save batch; every tab compares the tags and reloads only when they overlap.
 
@@ -117,7 +117,7 @@ function fluidReload(directories: string[]): Plugin {
 export default defineConfig({
     plugins: [
         fluidReload(['packages']),
-        // contentLiveReload(), ...
+        // liveReload(), ...
     ],
 })
 ```
@@ -143,7 +143,7 @@ Three details make this work reliably:
 
 ## Configuration
 
-Extension Configuration (`content_live_reload`) or `$GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['content_live_reload']`:
+Extension Configuration (`live_reload`) or `$GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['live_reload']`:
 
 | Setting | Default | Purpose |
 |---|---|---|
@@ -159,21 +159,21 @@ The browser-facing URL is resolved in this order: the explicit setting → vite-
 `viteServerInternalUrl` is where **PHP** posts the flushed tags. In Docker/DDEV setups `http://localhost:5173` is only correct when Vite runs in the same container as PHP-FPM. Broadcast failures are silent on purpose (a save must never break), so when reloads do not happen, first check the URL from the PHP side:
 
 ```bash
-ddev exec 'curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:5173/__typo3-content-changed -H "Content-Type: application/json" -d "{\"tags\":[]}"'
+ddev exec 'curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:5173/__typo3-live-reload -H "Content-Type: application/json" -d "{\"tags\":[]}"'
 ```
 
 `204` means PHP can reach the dev server. The Admin Panel's Status tab (see below) shows both URLs at one glance.
 
-The Vite plugin accepts a `debounceMs` option (default `200`) — how long broadcasts are collected before they go to the browser. An `endpoint` option also exists, but the PHP side always posts to `/__typo3-content-changed`; changing the endpoint only makes sense when a proxy rewrites that path.
+The Vite plugin accepts a `debounceMs` option (default `200`) — how long broadcasts are collected before they go to the browser. An `endpoint` option also exists, but the PHP side always posts to `/__typo3-live-reload`; changing the endpoint only makes sense when a proxy rewrites that path.
 
 ## Reload for Editors (Without a Dev Server)
 
-The same reload also works where no Vite dev server runs — typically a Staging environment. An editor saves a record in the backend, and every preview tab of a logged-in backend user that shows this record reloads. Only the transport changes: instead of the dev server's WebSocket, each tab asks a small endpoint every few seconds whether something changed. Tag matching, reload modes, the `typo3:content-changed` events, and the Admin Panel module all work exactly as described above — the Status tab shows which transport is active.
+The same reload also works where no Vite dev server runs — typically a Staging environment. An editor saves a record in the backend, and every preview tab of a logged-in backend user that shows this record reloads. Only the transport changes: instead of the dev server's WebSocket, each tab asks a small endpoint every few seconds whether something changed. Tag matching, reload modes, the `typo3:live-reload` events, and the Admin Panel module all work exactly as described above — the Status tab shows which transport is active.
 
 For this, install the package as a regular dependency instead of `--dev`, so it ships with your release:
 
 ```bash
-composer require wazum/typo3-content-live-reload
+composer require wazum/typo3-live-reload
 ```
 
 Then name the **exact** application context of the environment in `activeContexts`:
@@ -187,7 +187,7 @@ An entry matches itself and its subcontexts, and a bare `Production` entry is si
 Outside the Development context, a valid backend user session is required — this is not configurable:
 
 - Without a backend session, nothing is injected: no configuration, no tag data, no script. Anonymous visitors get the exact page they would get without the extension.
-- The poll endpoint (`/__content-live-reload/poll`) answers a bare 404 without a backend session, and in contexts that are not allowed at all it is not even claimed — the path behaves like any other unknown URL on your site.
+- The poll endpoint (`/__live-reload/poll`) answers a bare 404 without a backend session, and in contexts that are not allowed at all it is not even claimed — the path behaves like any other unknown URL on your site.
 
 `pollInterval` controls how often each tab asks for changes (so a reload arrives within that many milliseconds after a save), and `retention` controls how long a broadcast stays answerable — a tab that was hidden longer than that simply reloads once to catch up. The defaults are fine for editing workflows.
 
@@ -196,7 +196,7 @@ Outside the Development context, a valid backend user session is required — th
 The injected client fires a **cancelable** `CustomEvent` on `document` before each reload:
 
 ```js
-document.addEventListener('typo3:content-changed', (event) => {
+document.addEventListener('typo3:live-reload', (event) => {
     event.preventDefault()
     Turbo.visit(window.location.href, { action: 'replace' })
 })
@@ -210,7 +210,7 @@ Some extensions flush extra cache tags directly through the `CacheManager`. Thos
 
 ```php
 use TYPO3\CMS\Core\Attribute\AsEventListener;
-use Wazum\ContentLiveReload\Event\ModifyBroadcastTagsEvent;
+use Wazum\LiveReload\Event\ModifyBroadcastTagsEvent;
 
 #[AsEventListener(identifier: 'news/broadcast-tags')]
 final class NewsBroadcastTagsListener

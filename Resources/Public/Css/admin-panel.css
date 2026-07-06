@@ -1,4 +1,4 @@
-.content-live-reload-dot {
+.live-reload-dot {
     display: inline-block !important;
     width: 9px !important;
     height: 9px !important;
@@ -8,29 +8,29 @@
     background: transparent;
 }
 
-.content-live-reload-dot--connecting {
+.live-reload-dot--connecting {
     border: 2px solid #9e9e9e !important;
 }
 
-.content-live-reload-dot--connected {
+.live-reload-dot--connected {
     background: #91c257 !important;
 }
 
-.content-live-reload-dot--disconnected {
+.live-reload-dot--disconnected {
     border: 2px solid #e05c5c !important;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    .content-live-reload-dot--connected {
-        animation: content-live-reload-pulse 2.4s ease-out infinite;
+    .live-reload-dot--connected {
+        animation: live-reload-pulse 2.4s ease-out infinite;
     }
 
-    .content-live-reload-dot--ping {
-        animation: content-live-reload-ping 0.5s ease-out;
+    .live-reload-dot--ping {
+        animation: live-reload-ping 0.5s ease-out;
     }
 }
 
-@keyframes content-live-reload-pulse {
+@keyframes live-reload-pulse {
     0% {
         box-shadow: 0 0 0 0 rgba(145, 194, 87, 0.55);
     }
@@ -42,7 +42,7 @@
     }
 }
 
-@keyframes content-live-reload-ping {
+@keyframes live-reload-ping {
     0% {
         box-shadow: 0 0 0 0 rgba(145, 194, 87, 0.9);
     }

@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import typo3 from 'vite-plugin-typo3'
-import { contentLiveReload } from './vendor/wazum/typo3-content-live-reload/Resources/Private/Vite/dist/index.js'
+import { liveReload } from './vendor/wazum/typo3-live-reload/Resources/Private/Vite/dist/index.js'
 
 export default defineConfig({
     server: {
@@ -8,5 +8,5 @@ export default defineConfig({
         port: 5273,
         strictPort: true,
     },
-    plugins: [typo3(), contentLiveReload()],
+    plugins: [typo3(), liveReload()],
 })

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Functional;
+namespace Wazum\LiveReload\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
@@ -20,19 +20,19 @@ use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\ConsumableNonce;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
-use Wazum\ContentLiveReload\Broadcast\DatabaseBroadcastLog;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
-use Wazum\ContentLiveReload\Middleware\TagInjectionMiddleware;
+use Wazum\LiveReload\Broadcast\DatabaseBroadcastLog;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Middleware\TagInjectionMiddleware;
 
 final class TagInjectionPollTransportTest extends FunctionalTestCase
 {
     protected array $coreExtensionsToLoad = ['typo3/cms-adminpanel'];
 
-    protected array $testExtensionsToLoad = ['wazum/typo3-content-live-reload'];
+    protected array $testExtensionsToLoad = ['wazum/typo3-live-reload'];
 
     protected array $configurationToUseInTestInstance = [
         'EXTENSIONS' => [
-            'content_live_reload' => ['activeContexts' => 'Testing'],
+            'live_reload' => ['activeContexts' => 'Testing'],
         ],
     ];
 
@@ -48,13 +48,13 @@ final class TagInjectionPollTransportTest extends FunctionalTestCase
 
         $html = (string)$response->getBody();
         $headEnd = strpos($html, '</head>');
-        $configPosition = strpos($html, 'window.__contentLiveReload');
+        $configPosition = strpos($html, 'window.__liveReload');
         self::assertNotFalse($configPosition);
         self::assertLessThan($headEnd, $configPosition);
         self::assertStringContainsString('"tags":["tt_content_5","pageId_42"]', $html);
         self::assertStringContainsString('"mode":"tagged"', $html);
         self::assertStringContainsString('"transport":"poll"', $html);
-        self::assertStringContainsString('"endpoint":"\/__content-live-reload\/poll"', $html);
+        self::assertStringContainsString('"endpoint":"\/__live-reload\/poll"', $html);
         self::assertStringContainsString('"interval":3000', $html);
         self::assertStringContainsString('"sequence":2', $html);
         self::assertMatchesRegularExpression('#<script defer src="[^"]*poll-client\.js[^"]*"></script>#', $html);

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Broadcaster;
+namespace Wazum\LiveReload\Broadcaster;
 
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
 
 final class CompositeBroadcaster implements TagBroadcasterInterface
 {

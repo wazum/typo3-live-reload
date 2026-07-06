@@ -1,9 +1,9 @@
 {
-    "name": "wazum/typo3-content-live-reload",
+    "name": "wazum/typo3-live-reload",
     "type": "typo3-cms-extension",
-    "description": "Live-reloads the open frontend tabs affected by a content change in the backend, using TYPO3 cache tags to reload only the tabs that show the changed record.",
+    "description": "Live-reloads the open frontend tabs affected by a content or source-file change, using TYPO3 cache tags and rendered-file tags to reload only the affected tabs.",
     "license": "GPL-2.0-or-later",
-    "homepage": "https://github.com/wazum/typo3-content-live-reload",
+    "homepage": "https://github.com/wazum/typo3-live-reload",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "authors": [
@@ -33,12 +33,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Wazum\\ContentLiveReload\\": "Classes"
+            "Wazum\\LiveReload\\": "Classes"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Wazum\\ContentLiveReload\\Tests\\": "Tests"
+            "Wazum\\LiveReload\\Tests\\": "Tests"
         }
     },
     "config": {
@@ -50,7 +50,7 @@
     },
     "extra": {
         "typo3/cms": {
-            "extension-key": "content_live_reload",
+            "extension-key": "live_reload",
             "web-dir": "public",
             "version": "0.1.0",
             "Package": {

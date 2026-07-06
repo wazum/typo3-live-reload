@@ -1,8 +1,8 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3Fluid/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
 <div class="typo3-adminPanel-form-group">
     <div class="typo3-adminPanel-form-select">
-        <label for="content_live_reload_mode" class="typo3-adminPanel-form-select-label">Reload mode for this session</label>
-        <select name="TSFE_ADMIN_PANEL[content_live_reload_mode]" id="content_live_reload_mode" class="typo3-adminPanel-form-select-input">
+        <label for="live_reload_mode" class="typo3-adminPanel-form-select-label">Reload mode for this session</label>
+        <select name="TSFE_ADMIN_PANEL[live_reload_mode]" id="live_reload_mode" class="typo3-adminPanel-form-select-input">
             <option value="" {f:if(condition: '{mode} == \'\'', then: 'selected')}>extension default</option>
             <option value="tagged" {f:if(condition: '{mode} == \'tagged\'', then: 'selected')}>tagged — reload affected tabs</option>
             <option value="always" {f:if(condition: '{mode} == \'always\'', then: 'selected')}>always — reload every tab</option>

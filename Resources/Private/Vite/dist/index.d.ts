@@ -1,8 +1,8 @@
 import type { Plugin } from 'vite';
-export declare const VIRTUAL_MODULE_ID = "virtual:content-live-reload";
-export interface ContentLiveReloadOptions {
+export declare const VIRTUAL_MODULE_ID = "virtual:live-reload";
+export interface LiveReloadOptions {
     endpoint?: string;
     debounceMs?: number;
 }
-export declare function contentLiveReload(options?: ContentLiveReloadOptions): Plugin;
-export default contentLiveReload;
+export declare function liveReload(options?: LiveReloadOptions): Plugin;
+export default liveReload;

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Content Live Reload are documented here. The format is based on
+All notable changes to Live Reload are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project follows
 [Semantic Versioning](https://semver.org/).
 
@@ -24,7 +24,7 @@ only the changed content reloads and everything else keeps its state.
   no dev server is resolvable, so the extension works with or without Vite.
 - `reloadMode`: `tagged` (only affected tabs) or `always` (every connected tab), plus a per-session
   `paused` override from the Admin Panel.
-- Cancelable `typo3:content-changed` DOM event to take over the reload — for example a Turbo visit
+- Cancelable `typo3:live-reload` DOM event to take over the reload — for example a Turbo visit
   instead of a full reload.
 - `ModifyBroadcastTagsEvent` (PSR-14) to add tags that other extensions flush on their own, such as
   `tx_news_uid_*` for [georgringer/news](https://extensions.typo3.org/extension/news).

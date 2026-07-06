@@ -11,7 +11,7 @@ use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Scope;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\SourceKeyword;
 use TYPO3\CMS\Core\Type\Map;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
 
 $settings = new ExtensionSettings(GeneralUtility::makeInstance(ExtensionConfiguration::class));
 if (!$settings->contextAllowed()) {

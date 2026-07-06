@@ -1,4 +1,4 @@
-const scrollStorageKey = 'content-live-reload:scroll'
+const scrollStorageKey = 'live-reload:scroll'
 
 export interface ClientConfiguration {
     tags?: unknown
@@ -33,7 +33,7 @@ export function createClientCore(configuration: ClientConfiguration): ClientCore
     const announceConnection = (connected: boolean) => {
         configuration.connection = { connected, mode: configuration.mode }
         document.dispatchEvent(
-            new CustomEvent('typo3:content-changed:connection', {
+            new CustomEvent('typo3:live-reload:connection', {
                 detail: { connected, mode: configuration.mode },
             }),
         )
@@ -57,13 +57,13 @@ export function createClientCore(configuration: ClientConfiguration): ClientCore
             ownTags.length === 0 ||
             broadcastTags.some((tag) => ownTags.includes(tag))
         document.dispatchEvent(
-            new CustomEvent('typo3:content-changed:broadcast', {
+            new CustomEvent('typo3:live-reload:broadcast', {
                 detail: { tags: broadcastTags, matched: affected, mode: configuration.mode },
             }),
         )
         if (affected && configuration.mode === 'paused') missedWhilePaused = true
         if (!affected || configuration.mode === 'paused') return
-        const notice = new CustomEvent('typo3:content-changed', { cancelable: true, detail: { tags: broadcastTags } })
+        const notice = new CustomEvent('typo3:live-reload', { cancelable: true, detail: { tags: broadcastTags } })
         if (!document.dispatchEvent(notice)) return
         storeScrollPosition()
         window.location.reload()
@@ -79,7 +79,7 @@ export function createClientCore(configuration: ClientConfiguration): ClientCore
     }
 
     if (typeof BroadcastChannel !== 'undefined') {
-        new BroadcastChannel('content-live-reload').addEventListener('message', (event) => {
+        new BroadcastChannel('live-reload').addEventListener('message', (event) => {
             const data = event.data as { mode?: unknown } | null | undefined
             const mode = data && data.mode
             if (mode !== 'tagged' && mode !== 'always' && mode !== 'paused') {

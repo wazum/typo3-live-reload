@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wazum\ContentLiveReload\Tests\Functional;
+namespace Wazum\LiveReload\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\Test;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -11,21 +11,21 @@ use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
-use Wazum\ContentLiveReload\Collector\BroadcastTagCollector;
-use Wazum\ContentLiveReload\Event\ModifyBroadcastTagsEvent;
-use Wazum\ContentLiveReload\Hook\ClearCachePostProcHook;
-use Wazum\ContentLiveReload\Tests\Support\RecordingBroadcaster;
-use Wazum\ContentLiveReload\Tests\Support\RecordingDetacher;
+use Wazum\LiveReload\Collector\BroadcastTagCollector;
+use Wazum\LiveReload\Event\ModifyBroadcastTagsEvent;
+use Wazum\LiveReload\Hook\ClearCachePostProcHook;
+use Wazum\LiveReload\Tests\Support\RecordingBroadcaster;
+use Wazum\LiveReload\Tests\Support\RecordingDetacher;
 
 final class ClearCachePostProcHookTest extends FunctionalTestCase
 {
     protected array $coreExtensionsToLoad = ['typo3/cms-adminpanel'];
 
-    protected array $testExtensionsToLoad = ['wazum/typo3-content-live-reload'];
+    protected array $testExtensionsToLoad = ['wazum/typo3-live-reload'];
 
     protected array $configurationToUseInTestInstance = [
         'EXTENSIONS' => [
-            'content_live_reload' => ['activeContexts' => 'Testing'],
+            'live_reload' => ['activeContexts' => 'Testing'],
         ],
     ];
 
@@ -89,7 +89,7 @@ final class ClearCachePostProcHookTest extends FunctionalTestCase
             }
         };
         $hook = new ClearCachePostProcHook(
-            $this->get(\Wazum\ContentLiveReload\Configuration\ExtensionSettings::class),
+            $this->get(\Wazum\LiveReload\Configuration\ExtensionSettings::class),
             $collector,
             $eventDispatcher,
         );
@@ -119,7 +119,7 @@ final class ClearCachePostProcHookTest extends FunctionalTestCase
             }
         };
         $hook = new ClearCachePostProcHook(
-            $this->get(\Wazum\ContentLiveReload\Configuration\ExtensionSettings::class),
+            $this->get(\Wazum\LiveReload\Configuration\ExtensionSettings::class),
             $collector,
             $eventDispatcher,
         );

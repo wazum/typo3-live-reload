@@ -1,6 +1,6 @@
 (() => {
-    const feedStorageKey = 'content-live-reload:broadcasts'
-    const updateStorageKey = 'content-live-reload:last-update'
+    const feedStorageKey = 'live-reload:broadcasts'
+    const updateStorageKey = 'live-reload:last-update'
     const readStoredUpdate = () => {
         try {
             return sessionStorage.getItem(updateStorageKey)
@@ -21,7 +21,7 @@
             const information = label.parentElement?.querySelector('.typo3-adminPanel-module-trigger-information')
             if (information) return information
         }
-        const pane = document.querySelector('[data-typo3-tab-id="content_live_reload_status"]')
+        const pane = document.querySelector('[data-typo3-tab-id="live_reload_status"]')
         const moduleGroup = pane?.closest('.typo3-adminPanel-module-group')
         return moduleGroup?.querySelector('.typo3-adminPanel-module-trigger-information') ?? null
     }
@@ -31,7 +31,7 @@
         if (!element) return
         const dot = document.createElement('span')
         const dotState = state.connected === null ? 'connecting' : state.connected ? 'connected' : 'disconnected'
-        dot.className = 'content-live-reload-dot content-live-reload-dot--' + dotState
+        dot.className = 'live-reload-dot live-reload-dot--' + dotState
         dot.title = dotState
         const parts = []
         if (state.mode && state.mode !== 'tagged') parts.push(state.mode)
@@ -40,11 +40,11 @@
     }
 
     const pingDot = () => {
-        const dot = statusElement()?.querySelector('.content-live-reload-dot--connected')
+        const dot = statusElement()?.querySelector('.live-reload-dot--connected')
         if (!dot) return
-        dot.classList.remove('content-live-reload-dot--ping')
+        dot.classList.remove('live-reload-dot--ping')
         void dot.offsetWidth
-        dot.classList.add('content-live-reload-dot--ping')
+        dot.classList.add('live-reload-dot--ping')
     }
 
     const readEntries = () => {
@@ -63,7 +63,7 @@
     }
 
     const renderFeed = (entries) => {
-        const list = document.getElementById('content-live-reload-broadcasts')
+        const list = document.getElementById('live-reload-broadcasts')
         if (!list) return
         list.replaceChildren()
         if (entries.length === 0) {
@@ -89,14 +89,14 @@
         }
     }
 
-    document.addEventListener('typo3:content-changed:connection', (event) => {
+    document.addEventListener('typo3:live-reload:connection', (event) => {
         state.connected = event.detail.connected
         if (!state.pendingMode) state.mode = event.detail.mode
         renderStatus()
     })
 
     document.addEventListener('change', (event) => {
-        if (event.target?.id !== 'content_live_reload_mode') return
+        if (event.target?.id !== 'live_reload_mode') return
         state.pendingMode = true
         state.mode = event.target.value === '' ? 'default' : event.target.value
         renderStatus()
@@ -106,7 +106,7 @@
         fetch(form.dataset.typo3AjaxUrl, { method: 'POST', body: new FormData(form) })
             .then(() => {
                 try {
-                    new BroadcastChannel('content-live-reload').postMessage({ mode: appliedMode })
+                    new BroadcastChannel('live-reload').postMessage({ mode: appliedMode })
                 } catch {}
                 const query = location.search
                     .substring(1)
@@ -118,7 +118,7 @@
             .catch(() => {})
     })
 
-    document.addEventListener('typo3:content-changed:broadcast', (event) => {
+    document.addEventListener('typo3:live-reload:broadcast', (event) => {
         const now = new Date()
         const verdict =
             event.detail.mode === 'paused'
@@ -139,17 +139,17 @@
 
     const initialize = () => {
         try {
-            const connection = window.__contentLiveReload?.connection
+            const connection = window.__liveReload?.connection
             if (connection) {
                 state.connected = connection.connected
                 state.mode = connection.mode
-            } else if (window.__contentLiveReload) {
-                state.mode = window.__contentLiveReload.mode
+            } else if (window.__liveReload) {
+                state.mode = window.__liveReload.mode
             }
             renderFeed(readEntries())
             renderStatus()
         } catch (error) {
-            console.error('[content-live-reload] admin panel script failed', error)
+            console.error('[live-reload] admin panel script failed', error)
         }
     }
     if (document.readyState === 'loading') {

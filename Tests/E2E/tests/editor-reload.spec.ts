@@ -31,13 +31,13 @@ async function logInBackendUser(context: BrowserContext): Promise<Page> {
 
 test('anonymous visitors get no configuration and no client script', async ({ page }) => {
     await page.goto(`${stagingBase}/`)
-    expect(await page.evaluate(() => (window as any).__contentLiveReload)).toBeUndefined()
+    expect(await page.evaluate(() => (window as any).__liveReload)).toBeUndefined()
     expect(await page.locator('script[src*="poll-client"]').count()).toBe(0)
-    expect(await page.locator('script[src*="virtual:content-live-reload"]').count()).toBe(0)
+    expect(await page.locator('script[src*="virtual:live-reload"]').count()).toBe(0)
 })
 
 test('the poll endpoint answers 404 without a backend session', async ({ request }) => {
-    const response = await request.get(`${stagingBase}/__content-live-reload/poll?since=0`)
+    const response = await request.get(`${stagingBase}/__live-reload/poll?since=0`)
     expect(response.status()).toBe(404)
 })
 
@@ -45,7 +45,7 @@ test('the poll endpoint answers JSON for a logged-in backend user', async ({ bro
     const context = await browser.newContext()
     await logInBackendUser(context)
 
-    const response = await context.request.get(`${stagingBase}/__content-live-reload/poll?since=0`)
+    const response = await context.request.get(`${stagingBase}/__live-reload/poll?since=0`)
 
     expect(response.status()).toBe(200)
     expect(response.headers()['content-type']).toContain('application/json')
@@ -66,9 +66,9 @@ test('saving a record reloads only the affected editor tab', async ({ browser })
     await expect(homePage.locator('body')).toContainText('Editor home content')
     await expect(otherPage.locator('body')).toContainText('Editor other content')
 
-    const configuration = await homePage.evaluate(() => (window as any).__contentLiveReload)
+    const configuration = await homePage.evaluate(() => (window as any).__liveReload)
     expect(configuration.transport).toBe('poll')
-    expect(configuration.endpoint).toBe('/__content-live-reload/poll')
+    expect(configuration.endpoint).toBe('/__live-reload/poll')
     expect(configuration.tags).toContain(`pageId_${seed.editorHomePageUid}`)
 
     let otherReloads = 0
@@ -79,7 +79,7 @@ test('saving a record reloads only the affected editor tab', async ({ browser })
         () =>
             new Promise<{ matched: boolean }>((resolveBroadcast) => {
                 document.addEventListener(
-                    'typo3:content-changed:broadcast',
+                    'typo3:live-reload:broadcast',
                     (event) => resolveBroadcast({ matched: (event as CustomEvent).detail.matched }),
                     { once: true },
                 )
