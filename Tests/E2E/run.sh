@@ -13,6 +13,10 @@ for pidFile in "${E2E_DIR}/.php-server.pid" "${E2E_DIR}/.php-server-staging.pid"
         rm -f "${pidFile}"
     fi
 done
+# A previous vite may survive the pid-based kill (npx spawns it as a grandchild); free the ports.
+for port in 8080 8081 5273; do
+    fuser -k "${port}/tcp" 2>/dev/null || true
+done
 
 rm -rf "${APP_DIR}"
 mkdir -p "${APP_DIR}"
@@ -56,7 +60,8 @@ TYPO3_CONTEXT=Development VITE_PRIMARY_PORT=5273 php -S 127.0.0.1:8080 -t public
 echo $! > "${E2E_DIR}/.php-server.pid"
 TYPO3_CONTEXT='Production/Staging' php -S 127.0.0.1:8081 -t public router.php >"${E2E_DIR}/.php-server-staging.log" 2>&1 &
 echo $! > "${E2E_DIR}/.php-server-staging.pid"
-npx vite --config vite.config.ts >"${E2E_DIR}/.vite.log" 2>&1 &
+# Direct node invocation so $! is the vite pid itself, not an npx wrapper.
+node node_modules/vite/bin/vite.js --config vite.config.ts >"${E2E_DIR}/.vite.log" 2>&1 &
 echo $! > "${E2E_DIR}/.vite.pid"
 
 for _ in $(seq 1 30); do
