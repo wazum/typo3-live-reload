@@ -12,10 +12,13 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Throwable;
 use TYPO3\CMS\Core\Cache\CacheDataCollectorInterface;
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\ConsumableNonce;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Middleware\PolicyBag;
+use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
+use Wazum\ContentLiveReload\Broadcast\BroadcastLogInterface;
 use Wazum\ContentLiveReload\Configuration\ExtensionSettings;
 use Wazum\ContentLiveReload\Resolver\DevServerUrlResolver;
 
@@ -23,9 +26,15 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
 {
     use LoggerAwareTrait;
 
+    private const CLIENT_SCRIPT = 'EXT:content_live_reload/Resources/Public/JavaScript/poll-client.js';
+
     public function __construct(
         private readonly ExtensionSettings $settings,
         private readonly DevServerUrlResolver $devServerUrlResolver,
+        private readonly BroadcastLogInterface $broadcastLog,
+        private readonly Context $context,
+        private readonly ?object $systemResourceFactory = null,
+        private readonly ?object $systemResourcePublisher = null,
     ) {
     }
 
@@ -51,23 +60,113 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
             return $response;
         }
 
-        $devServerUrl = $this->devServerUrlResolver->resolve($request);
-        if ($devServerUrl === null) {
-            return $response;
-        }
-
         $html = (string)$response->getBody();
         $insertPosition = $this->insertPosition($html);
         if ($insertPosition === null) {
             return $response;
         }
 
-        $snippet = $this->snippet($request, $devServerUrl, $html);
+        $snippet = $this->snippet($request, $html);
+        if ($snippet === null) {
+            return $response;
+        }
+
         $this->declareNonceUsage($request);
         $body = new Stream('php://temp', 'rw');
         $body->write(substr($html, 0, $insertPosition) . $snippet . substr($html, $insertPosition));
 
         return $response->withBody($body);
+    }
+
+    private function snippet(ServerRequestInterface $request, string $html): ?string
+    {
+        if ($this->settings->developmentContext()) {
+            return $this->viteSnippet($request, $html);
+        }
+        if (!$this->backendUserLoggedIn()) {
+            return null;
+        }
+
+        return $this->pollSnippet($request, $html);
+    }
+
+    private function viteSnippet(ServerRequestInterface $request, string $html): ?string
+    {
+        $devServerUrl = $this->devServerUrlResolver->resolve($request);
+        if ($devServerUrl === null) {
+            return null;
+        }
+
+        $configuration = $this->configuration($request, ['transport' => 'vite']);
+        $nonceValue = $this->nonceValue($request);
+        $nonceAttribute = $this->nonceAttribute($nonceValue);
+        $moduleUrl = htmlspecialchars($devServerUrl . '/@id/virtual:content-live-reload');
+        $snippet = '<script' . $nonceAttribute . '>window.__contentLiveReload = ' . $configuration . '</script>'
+            . '<script type="module" src="' . $moduleUrl . '"' . $nonceAttribute . '></script>';
+
+        return $this->withCspNonceMeta($snippet, $nonceValue, $html);
+    }
+
+    private function pollSnippet(ServerRequestInterface $request, string $html): string
+    {
+        $configuration = $this->configuration($request, [
+            'transport' => 'poll',
+            'endpoint' => PollEndpointMiddleware::PATH,
+            'interval' => $this->settings->pollInterval(),
+            'sequence' => $this->broadcastLog->latestSequence(),
+        ]);
+        $nonceValue = $this->nonceValue($request);
+        $nonceAttribute = $this->nonceAttribute($nonceValue);
+        $scriptUrl = htmlspecialchars($this->clientScriptUrl($request));
+        $snippet = '<script' . $nonceAttribute . '>window.__contentLiveReload = ' . $configuration . '</script>'
+            . '<script defer src="' . $scriptUrl . '"' . $nonceAttribute . '></script>';
+
+        return $this->withCspNonceMeta($snippet, $nonceValue, $html);
+    }
+
+    /**
+     * @param array<string, string|int> $transportConfiguration
+     */
+    private function configuration(ServerRequestInterface $request, array $transportConfiguration): string
+    {
+        return json_encode(
+            array_merge(
+                ['tags' => $this->tags($request), 'mode' => $this->mode($request)],
+                $transportConfiguration,
+            ),
+            JSON_THROW_ON_ERROR | JSON_HEX_TAG,
+        );
+    }
+
+    private function clientScriptUrl(ServerRequestInterface $request): string
+    {
+        if ($this->systemResourceFactory === null || $this->systemResourcePublisher === null) {
+            return PathUtility::getPublicResourceWebPath(self::CLIENT_SCRIPT);
+        }
+
+        return (string)$this->systemResourcePublisher->generateUri(
+            $this->systemResourceFactory->createPublicResource(self::CLIENT_SCRIPT),
+            $request,
+        );
+    }
+
+    private function withCspNonceMeta(string $snippet, ?string $nonceValue, string $html): string
+    {
+        if ($nonceValue === null || str_contains($html, 'property="csp-nonce"')) {
+            return $snippet;
+        }
+
+        return '<meta property="csp-nonce" nonce="' . htmlspecialchars($nonceValue) . '">' . $snippet;
+    }
+
+    private function nonceAttribute(?string $nonceValue): string
+    {
+        return $nonceValue === null ? '' : ' nonce="' . htmlspecialchars($nonceValue) . '"';
+    }
+
+    private function backendUserLoggedIn(): bool
+    {
+        return (bool)$this->context->getPropertyFromAspect('backend.user', 'isLoggedIn', false);
     }
 
     private function declareNonceUsage(ServerRequestInterface $request): void
@@ -91,25 +190,6 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         $bodyEnd = stripos($html, '</body>');
 
         return $bodyEnd === false ? null : $bodyEnd;
-    }
-
-    private function snippet(ServerRequestInterface $request, string $devServerUrl, string $html): string
-    {
-        $configuration = json_encode(
-            ['tags' => $this->tags($request), 'mode' => $this->mode($request)],
-            JSON_THROW_ON_ERROR | JSON_HEX_TAG,
-        );
-        $nonceValue = $this->nonceValue($request);
-        $nonceAttribute = $nonceValue === null ? '' : ' nonce="' . htmlspecialchars($nonceValue) . '"';
-        $moduleUrl = htmlspecialchars($devServerUrl . '/@id/virtual:content-live-reload');
-
-        $snippet = '<script' . $nonceAttribute . '>window.__contentLiveReload = ' . $configuration . '</script>'
-            . '<script type="module" src="' . $moduleUrl . '"' . $nonceAttribute . '></script>';
-        if ($nonceValue !== null && !str_contains($html, 'property="csp-nonce"')) {
-            $snippet = '<meta property="csp-nonce" nonce="' . htmlspecialchars($nonceValue) . '">' . $snippet;
-        }
-
-        return $snippet;
     }
 
     private function mode(ServerRequestInterface $request): string

@@ -19,9 +19,12 @@ use TYPO3\CMS\Core\Security\ContentSecurityPolicy\ConsumableNonce;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Wazum\ContentLiveReload\Middleware\TagInjectionMiddleware;
+use Wazum\ContentLiveReload\Tests\Support\SwitchesApplicationContext;
 
 final class TagInjectionMiddlewareTest extends FunctionalTestCase
 {
+    use SwitchesApplicationContext;
+
     protected array $coreExtensionsToLoad = ['typo3/cms-adminpanel'];
 
     protected array $testExtensionsToLoad = ['wazum/typo3-content-live-reload'];
@@ -29,11 +32,23 @@ final class TagInjectionMiddlewareTest extends FunctionalTestCase
     protected array $configurationToUseInTestInstance = [
         'EXTENSIONS' => [
             'content_live_reload' => [
-                'activeContexts' => 'Testing',
+                'activeContexts' => 'Development, Testing',
                 'viteServerPublicUrl' => 'https://vite.example:5173',
             ],
         ],
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->switchApplicationContext('Development');
+    }
+
+    protected function tearDown(): void
+    {
+        $this->restoreApplicationContext();
+        parent::tearDown();
+    }
 
     #[Test]
     public function injectsTagsAndClientModuleBeforeHeadEnd(): void
@@ -47,6 +62,7 @@ final class TagInjectionMiddlewareTest extends FunctionalTestCase
         self::assertLessThan($headEnd, $configPosition);
         self::assertStringContainsString('"tags":["tt_content_5","pageId_42"]', $html);
         self::assertStringContainsString('"mode":"tagged"', $html);
+        self::assertStringContainsString('"transport":"vite"', $html);
         self::assertStringContainsString(
             '<script type="module" src="https://vite.example:5173/@id/virtual:content-live-reload"',
             $html,

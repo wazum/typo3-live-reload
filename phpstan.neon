@@ -6,3 +6,6 @@ parameters:
         -
             identifier: method.notFound
             path: Classes/Resolver/DevServerUrlResolver.php
+        -
+            identifier: method.notFound
+            path: Classes/Middleware/TagInjectionMiddleware.php
