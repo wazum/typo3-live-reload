@@ -1,3 +1,5 @@
+config.admPanel = 1
+
 page = PAGE
 page.10 = CONTENT
 page.10 {

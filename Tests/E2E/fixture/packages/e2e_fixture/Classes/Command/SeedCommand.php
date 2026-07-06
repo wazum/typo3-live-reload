@@ -23,6 +23,7 @@ final class SeedCommand extends Command
     {
         Bootstrap::initializeBackendAuthentication();
 
+        $this->removeDefaultTypoScriptTemplates();
         $this->ensureEditorUser();
 
         $output->writeln(json_encode(array_merge($this->contentRecords(), [
@@ -79,6 +80,13 @@ final class SeedCommand extends Command
             'editorOtherPageUid' => (int)$dataHandler->substNEWwithIDs['NEW_editor_other'],
             'editorOtherContentUid' => (int)$dataHandler->substNEWwithIDs['NEW_content_editor_other'],
         ];
+    }
+
+    private function removeDefaultTypoScriptTemplates(): void
+    {
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('sys_template')
+            ->truncate('sys_template');
     }
 
     private function ensureEditorUser(): void
