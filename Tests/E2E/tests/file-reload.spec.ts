@@ -9,6 +9,7 @@ const layoutFile = 'packages/e2e_fixture/Resources/Private/PageView/Layouts/Defa
 const templateFile = 'packages/e2e_fixture/Resources/Private/PageView/Pages/Default.html'
 const partialFile = 'packages/e2e_fixture/Resources/Private/PageView/Partials/HomeTeaser.html'
 const viewHelperFile = 'packages/e2e_fixture/Classes/ViewHelpers/StampViewHelper.php'
+const componentFile = 'packages/e2e_fixture/Resources/Private/Components/Badge/Badge.html'
 
 function touchTemplate(relativePath: string) {
     appendFileSync(resolve(appDir, relativePath), `\n<!-- touched ${Date.now()} -->\n`)
@@ -55,6 +56,7 @@ test('pages expose the rendered layout, template, partial and view helper as fil
     expect(homeTags).toContain(`file:${templateFile}`)
     expect(homeTags).toContain(`file:${layoutFile}`)
     expect(homeTags).toContain(`file:${partialFile}`)
+    expect(homeTags).toContain(`file:${componentFile}`)
     expect(homeTags).not.toContain(`file:${viewHelperFile}`)
 
     await page.goto('/other')
@@ -63,6 +65,26 @@ test('pages expose the rendered layout, template, partial and view helper as fil
     expect(otherTags).toContain(`file:${layoutFile}`)
     expect(otherTags).toContain(`file:${viewHelperFile}`)
     expect(otherTags).not.toContain(`file:${partialFile}`)
+    expect(otherTags).not.toContain(`file:${componentFile}`)
+})
+
+test('editing a component template reloads only the page that rendered it', async ({ browser }) => {
+    const { homePage, otherPage, close } = await openPages(browser)
+
+    let otherReloads = 0
+    otherPage.on('load', () => {
+        otherReloads += 1
+    })
+    const otherBroadcast = nonMatchingBroadcast(otherPage)
+    const homeReloaded = homePage.waitForEvent('load', { timeout: 15000 })
+
+    touchTemplate(componentFile)
+
+    await homeReloaded
+    expect(await otherBroadcast).toEqual({ matched: false })
+    expect(otherReloads).toBe(0)
+
+    await close()
 })
 
 test('editing a partial reloads only the page that rendered it', async ({ browser }) => {
