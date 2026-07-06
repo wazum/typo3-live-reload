@@ -69,19 +69,19 @@ The import path is relative to `vite.config.ts` — adjust it if your config fil
 ## How It Works
 
 ```
-┌──────────────────────────────┐          ┌──────────────────────────────┐
-│          TYPO3 (PHP)         │          │       Vite dev server        │
-│                              │          │                              │
-│  DataHandler save/delete     │   POST   │  liveReload() plugin         │
-│   └─ flushed cache tags ────────────────▶   debounce → broadcast       │
-│                              │          │        over HMR ws           │
-│  Fluid render                │          │           ▲                  │
-│   └─ used files recorded     │          │  watcher: changed template   │
-│                              │          │  or PHP file → file: tag ────┤
-│  middleware injects the      │          │           │                  │
-│  page's cache tags and       │  HMR ws  │           ▼                  │
-│  file: tags + the client ◀────────────── virtual:live-reload          │
-└──────────────────────────────┘          └──────────────────────────────┘
+┌─────────────────────────────┐            ┌─────────────────────────────┐
+│         TYPO3 (PHP)         │            │       Vite dev server       │
+│                             │            │                             │
+│ DataHandler save/delete     │            │ liveReload() plugin         │
+│  └─ flushed cache tags      │───POST────▶│  debounce → broadcast       │
+│                             │            │  over the HMR websocket     │
+│ Fluid render                │            │          ▲                  │
+│  └─ used files recorded     │            │ watcher: changed template   │
+│                             │            │ or PHP file → file: tag     │
+│ middleware injects the      │            │          │                  │
+│ page's cache tags and       │            │          ▼                  │
+│ file: tags + the client     │◀──HMR ws───│ virtual:live-reload module  │
+└─────────────────────────────┘            └─────────────────────────────┘
                                                        │
                                                        ▼
                                      each tab: broadcast ∩ own tags ≠ ∅ ?
