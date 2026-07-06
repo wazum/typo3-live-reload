@@ -8,5 +8,5 @@ export default defineConfig({
         port: 5273,
         strictPort: true,
     },
-    plugins: [typo3(), liveReload()],
+    plugins: [typo3(), liveReload({ watch: { paths: ['packages'] } })],
 })

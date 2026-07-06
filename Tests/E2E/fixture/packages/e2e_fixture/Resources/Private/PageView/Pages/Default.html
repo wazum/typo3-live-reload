@@ -1,0 +1,18 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3Fluid/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<f:layout name="Default" />
+
+<f:section name="Main">
+    <f:if condition="{pageUid} == 1">
+        <f:then>
+            <f:render partial="HomeTeaser" />
+        </f:then>
+        <f:else>
+            <f:render partial="Stamp" />
+        </f:else>
+    </f:if>
+    {mainContent -> f:format.raw()}
+</f:section>
+
+</html>

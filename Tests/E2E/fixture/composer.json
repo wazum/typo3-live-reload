@@ -14,7 +14,7 @@
             "type": "path",
             "url": "packages/e2e_fixture",
             "options": {
-                "symlink": false
+                "symlink": true
             }
         }
     ],

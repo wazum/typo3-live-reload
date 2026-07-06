@@ -99,6 +99,22 @@ final class RenderedFileCollectorTest extends TestCase
     }
 
     #[Test]
+    public function keepsUmlautsAndSpacesInFileTags(): void
+    {
+        mkdir($this->projectPath . '/local/site/Übersicht Ordner', 0775, true);
+        $file = $this->projectPath . '/local/site/Übersicht Ordner/Kopfzeile Größe.html';
+        touch($file);
+
+        $collector = $this->createCollector();
+        $collector->add($file);
+
+        self::assertSame(
+            ['file:local/site/Übersicht Ordner/Kopfzeile Größe.html'],
+            $collector->fileTags($this->projectPath),
+        );
+    }
+
+    #[Test]
     public function deduplicatesAndSortsTags(): void
     {
         $first = $this->projectPath . '/local/site/Resources/B.html';

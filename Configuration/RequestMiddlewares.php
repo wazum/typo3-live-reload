@@ -2,11 +2,21 @@
 
 declare(strict_types=1);
 
+use Wazum\LiveReload\Middleware\DisablePageCacheMiddleware;
 use Wazum\LiveReload\Middleware\PollEndpointMiddleware;
 use Wazum\LiveReload\Middleware\TagInjectionMiddleware;
 
 return [
     'frontend' => [
+        'wazum/live-reload/disable-page-cache' => [
+            'target' => DisablePageCacheMiddleware::class,
+            'after' => [
+                'typo3/cms-frontend/page-argument-validator',
+            ],
+            'before' => [
+                'typo3/cms-frontend/prepare-tsfe-rendering',
+            ],
+        ],
         'wazum/live-reload/poll-endpoint' => [
             'target' => PollEndpointMiddleware::class,
             'after' => [

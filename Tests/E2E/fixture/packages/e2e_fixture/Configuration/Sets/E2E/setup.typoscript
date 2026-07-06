@@ -1,10 +1,18 @@
 config.admPanel = 1
 
 page = PAGE
-page.10 = CONTENT
+page.10 = PAGEVIEW
 page.10 {
-    table = tt_content
-    select {
-        orderBy = sorting
+    paths.10 = EXT:e2e_fixture/Resources/Private/PageView/
+    variables {
+        pageUid = TEXT
+        pageUid.data = page:uid
+        mainContent = CONTENT
+        mainContent {
+            table = tt_content
+            select {
+                orderBy = sorting
+            }
+        }
     }
 }

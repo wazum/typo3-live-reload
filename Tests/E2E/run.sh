@@ -44,6 +44,8 @@ php -d opcache.enable_cli=0 vendor/bin/typo3 setup --force --no-interaction
 
 cp "${E2E_DIR}/fixture/additional.php" config/system/additional.php
 cp "${E2E_DIR}/fixture/sites-main-config.yaml" config/sites/main/config.yaml
+# The setup command writes a welcome-page TypoScript that would override the fixture set.
+rm -f config/sites/main/setup.typoscript config/sites/main/constants.typoscript
 vendor/bin/typo3 cache:flush
 vendor/bin/typo3 e2e:seed > "${E2E_DIR}/.seed.json"
 vendor/bin/typo3 cache:flush

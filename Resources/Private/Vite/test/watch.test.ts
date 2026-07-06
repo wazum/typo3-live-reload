@@ -112,6 +112,22 @@ describe('liveReload watch', () => {
         expect(send).not.toHaveBeenCalled()
     })
 
+    it('keeps umlauts and spaces in broadcast file: tags', async () => {
+        mkdirSync(join(projectRoot, 'templates', 'Übersicht Ordner'), { recursive: true })
+        const file = join(projectRoot, 'templates', 'Übersicht Ordner', 'Kopfzeile Größe.html')
+        writeFileSync(file, '<div/>')
+        const { send, emit } = configuredPlugin()
+
+        emit('change', file)
+        await vi.runAllTimersAsync()
+
+        expect(send).toHaveBeenCalledWith({
+            type: 'custom',
+            event: 'typo3:live-reload',
+            data: { tags: ['file:templates/Übersicht Ordner/Kopfzeile Größe.html'] },
+        })
+    })
+
     it('honours a custom extension list', async () => {
         const helper = join(projectRoot, 'templates', 'Helper.php')
         writeFileSync(helper, '<?php')

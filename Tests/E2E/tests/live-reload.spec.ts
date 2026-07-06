@@ -31,8 +31,8 @@ test('editing a record reloads only the affected tab', async ({ browser }) => {
     const otherPage = await contextOther.newPage()
     await homePage.goto('/')
     await otherPage.goto('/other')
-    await expect(homePage.locator('body')).toContainText('Home content')
-    await expect(otherPage.locator('body')).toContainText('Other content')
+    await expect(homePage.locator(`#c${seed.homeContentUid}`)).toBeVisible()
+    await expect(otherPage.locator(`#c${seed.otherContentUid}`)).toBeVisible()
 
     let otherReloads = 0
     otherPage.on('load', () => {
@@ -49,9 +49,10 @@ test('editing a record reloads only the affected tab', async ({ browser }) => {
             }),
     )
 
-    updateContent(seed.homeContentUid, 'Home content updated')
+    const headline = `Home reload ${Date.now()}`
+    updateContent(seed.homeContentUid, headline)
 
-    await expect(homePage.locator('body')).toContainText('Home content updated', { timeout: 15000 })
+    await expect(homePage.locator('body')).toContainText(headline, { timeout: 15000 })
     expect(await otherBroadcast).toEqual({ matched: false })
     expect(otherReloads).toBe(0)
 
