@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+    body {
+        margin: 0;
+        background: #1e1e2e;
+        font-family: 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+        font-size: 15px;
+        color: #cdd6f4;
+        height: 100vh;
+        overflow: hidden;
+    }
+    .tabbar {
+        background: #181825;
+        padding: 0 12px;
+        display: flex;
+        border-bottom: 1px solid #313244;
+    }
+    .tab {
+        padding: 9px 18px;
+        background: #1e1e2e;
+        color: #cdd6f4;
+        font-size: 13px;
+        border-top: 2px solid #89b4fa;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .tab .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: transparent;
+    }
+    .tab.dirty .dot { background: #f9e2af; }
+    .code {
+        padding: 18px 0;
+        line-height: 1.75;
+    }
+    .line {
+        display: flex;
+        white-space: pre;
+    }
+    .line .no {
+        width: 44px;
+        text-align: right;
+        padding-right: 18px;
+        color: #45475a;
+        user-select: none;
+        flex-shrink: 0;
+    }
+    .tag { color: #89b4fa; }
+    .attr { color: #f9e2af; }
+    .value { color: #a6e3a1; }
+    .text { color: #cdd6f4; }
+    .caret {
+        display: inline-block;
+        width: 8px;
+        height: 17px;
+        background: #cdd6f4;
+        vertical-align: text-bottom;
+        animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .saved {
+        position: fixed;
+        bottom: 16px;
+        right: 18px;
+        background: #a6e3a1;
+        color: #1e1e2e;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 6px;
+        opacity: 0;
+        transition: opacity .15s ease;
+    }
+    .saved.visible { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="tabbar">
+    <div class="tab" id="tab"><span class="dot"></span>Partials/HomeTeaser.html</div>
+</div>
+<div class="code">
+    <div class="line"><span class="no">1</span><span><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="value">"teaser"</span><span class="tag">&gt;</span><span class="text">Home teaser</span><span class="tag">&lt;/div&gt;</span></span></div>
+    <div class="line"><span class="no">2</span><span><span class="tag">&lt;c:badge</span> <span class="tag">/&gt;</span></span></div>
+    <div class="line"><span class="no">3</span><span id="insert"></span><span class="caret" id="caret" style="visibility:hidden"></span></div>
+</div>
+<div class="saved" id="saved">✓ saved — HomeTeaser.html</div>
+<script>
+    window.typingDone = false
+    window.typeLine = (text) => {
+        document.getElementById('caret').style.visibility = 'visible'
+        document.getElementById('tab').classList.add('dirty')
+        const target = document.getElementById('insert')
+        let index = 0
+        const interval = setInterval(() => {
+            target.textContent = text.slice(0, index += 1)
+            if (index >= text.length) {
+                clearInterval(interval)
+                window.typingDone = true
+            }
+        }, 55)
+    }
+    window.flashSaved = () => {
+        document.getElementById('tab').classList.remove('dirty')
+        document.getElementById('caret').style.visibility = 'hidden'
+        const badge = document.getElementById('saved')
+        badge.classList.add('visible')
+        setTimeout(() => badge.classList.remove('visible'), 2600)
+    }
+</script>
+</body>
+</html>

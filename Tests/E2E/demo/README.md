@@ -38,3 +38,21 @@ ffmpeg -ss 4 -t 10 -i backend.webm -ss 4 -t 10 -i top.webm -ss 4 -t 10 -i bottom
   "[0:v]fps=10,scale=840:-2[a];[1:v]fps=10,scale=840:-2[b];[2:v]fps=10,scale=840:-2[c];[a][b][c]vstack=inputs=3,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5" \
   ../../Documentation/demo.gif
 ```
+
+## File-Change Demo (`record-file.mjs`)
+
+Records `Documentation/demo-file.gif`: a fake editor pane saves a Fluid partial, the frontend tab that rendered it reloads, a second tab stays untouched. No backend, no login, no admin panel setup — only the harness:
+
+```bash
+bash Tests/E2E/run.sh
+# inside the web container (or a playwright container with DEMO_BASE_URL=http://web:8080):
+cd Tests/E2E && DEMO_BASE_URL=http://127.0.0.1:8080 node demo/record-file.mjs
+```
+
+The script restores the partial afterwards. Compose (editor on top, then the two frontend tabs):
+
+```bash
+ffmpeg -ss 2 -t 10.5 -i editor.webm -ss 2 -t 10.5 -i top.webm -ss 2 -t 10.5 -i bottom.webm -filter_complex \
+  "[0:v]fps=10,scale=840:-2[a];[1:v]fps=10,scale=840:-2[b];[2:v]fps=10,scale=840:-2[c];[a][b][c]vstack=inputs=3,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5" \
+  ../../Documentation/demo-file.gif
+```
