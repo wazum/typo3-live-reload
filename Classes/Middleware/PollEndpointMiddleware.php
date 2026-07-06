@@ -63,7 +63,13 @@ final class PollEndpointMiddleware implements MiddlewareInterface
             return ['sequence' => $latestSequence, 'stale' => true];
         }
 
-        return ['sequence' => $latestSequence, 'broadcasts' => $this->broadcastLog->since($since)];
+        $broadcasts = $this->broadcastLog->since($since);
+        // A broadcast can be appended between the latestSequence() read and the
+        // since() query; the cursor must cover everything actually returned or
+        // the client would receive the tail entries again on its next poll.
+        $sequence = max([$latestSequence, ...array_column($broadcasts, 'sequence')]);
+
+        return ['sequence' => $sequence, 'broadcasts' => $broadcasts];
     }
 
     private function sinceParameter(ServerRequestInterface $request): ?int

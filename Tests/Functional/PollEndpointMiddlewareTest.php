@@ -206,6 +206,57 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
         self::assertSame(['sequence' => 102, 'stale' => true], $this->payload($response));
     }
 
+    #[Test]
+    public function cursorNeverFallsBehindTheReturnedBroadcasts(): void
+    {
+        $this->switchApplicationContext('Development');
+        // Simulates a row inserted between the latestSequence() read and the
+        // since() query: the log already returns sequence 2 while the earlier
+        // cursor read only saw 1. The response cursor must be 2, or the client
+        // would receive sequence 2 again on its next poll.
+        $raceyLog = new class implements \Wazum\LiveReload\Broadcast\BroadcastLogInterface {
+            public function append(array $tags): void
+            {
+            }
+
+            public function since(int $sequence): array
+            {
+                return [
+                    ['sequence' => 1, 'tags' => ['pageId_1']],
+                    ['sequence' => 2, 'tags' => ['pageId_2']],
+                ];
+            }
+
+            public function latestSequence(): int
+            {
+                return 1;
+            }
+
+            public function oldestSequence(): int
+            {
+                return 1;
+            }
+        };
+        $middleware = new PollEndpointMiddleware(
+            $this->get(ExtensionSettings::class),
+            $raceyLog,
+            $this->get(Context::class),
+        );
+
+        $request = (new ServerRequest('https://example.org' . PollEndpointMiddleware::PATH, 'GET'))
+            ->withQueryParams(['since' => '0']);
+        $handler = new class implements RequestHandlerInterface {
+            public function handle(ServerRequestInterface $request): ResponseInterface
+            {
+                return new HtmlResponse('handler');
+            }
+        };
+        $payload = $this->payload($middleware->process($request, $handler));
+
+        self::assertSame(2, $payload['sequence']);
+        self::assertCount(2, $payload['broadcasts']);
+    }
+
     /**
      * @param array<string, string> $queryParameters
      */
