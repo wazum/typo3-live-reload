@@ -5,6 +5,7 @@ export const VIRTUAL_MODULE_ID = 'virtual:live-reload';
 const EVENT_NAME = 'typo3:live-reload';
 const DEFAULT_ENDPOINT = '/__typo3-live-reload';
 const DEFAULT_DEBOUNCE_MS = 200;
+const MAXIMUM_BODY_BYTES = 256 * 1024;
 const DEFAULT_WATCH_EXTENSIONS = ['.html', '.php'];
 const WATCH_EVENTS = ['change', 'add', 'unlink'];
 const clientFilePath = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist', 'vite-client.js');
@@ -83,7 +84,8 @@ export function liveReload(options = {}) {
                     server.watcher.on(event, broadcast);
             }
             server.middlewares.use((request, response, next) => {
-                if (!request.url || !request.url.startsWith(endpoint)) {
+                const pathname = request.url ? new URL(request.url, 'http://localhost').pathname : '';
+                if (pathname !== endpoint) {
                     next();
                     return;
                 }
@@ -95,8 +97,16 @@ export function liveReload(options = {}) {
                 void (async () => {
                     try {
                         const chunks = [];
+                        let bodySize = 0;
                         for await (const chunk of request) {
-                            chunks.push(Buffer.from(chunk));
+                            const buffer = Buffer.from(chunk);
+                            bodySize += buffer.length;
+                            if (bodySize > MAXIMUM_BODY_BYTES) {
+                                response.statusCode = 413;
+                                response.end();
+                                return;
+                            }
+                            chunks.push(buffer);
                         }
                         const payload = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
                         if (!Array.isArray(payload.tags) ||

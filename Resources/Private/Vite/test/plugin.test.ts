@@ -81,6 +81,36 @@ describe('liveReload', () => {
         vi.useRealTimers()
     })
 
+    it('matches the endpoint path exactly', async () => {
+        const plugin = liveReload()
+        const { server, request } = fakeServer()
+        ;(plugin.configureServer as any)(server)
+
+        const prefixed = post('/__typo3-live-reload-anything', '{"tags":[]}')
+        request(prefixed.req, prefixed.res)
+        expect(prefixed.res.payload).toBe('next')
+
+        const withQuery = post('/__typo3-live-reload?x=1', JSON.stringify({ tags: ['a'] }))
+        request(withQuery.req, withQuery.res)
+        await vi.waitFor(() => {
+            expect(withQuery.res.ended).toBe(true)
+        })
+        expect(withQuery.res.statusCode).toBe(204)
+    })
+
+    it('rejects oversized bodies', async () => {
+        const plugin = liveReload()
+        const { server, request } = fakeServer()
+        ;(plugin.configureServer as any)(server)
+
+        const oversized = post('/__typo3-live-reload', JSON.stringify({ tags: ['x'.repeat(300_000)] }))
+        request(oversized.req, oversized.res)
+        await vi.waitFor(() => {
+            expect(oversized.res.ended).toBe(true)
+        })
+        expect(oversized.res.statusCode).toBe(413)
+    })
+
     it('rejects invalid payloads and wrong methods', async () => {
         const plugin = liveReload()
         const { server, request } = fakeServer()
