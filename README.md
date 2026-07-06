@@ -209,9 +209,9 @@ Outside the Development context, a valid backend user session is required — th
 
 `pollInterval` controls how often each tab asks for changes (so a reload arrives within that many milliseconds after a save), and `retention` controls how long a broadcast stays answerable — a tab that was hidden longer than that simply reloads once to catch up. The defaults are fine for editing workflows.
 
-## Turbo Instead of Reload
+## Morph Instead of Reload
 
-The injected client fires a **cancelable** `CustomEvent` on `document` before each reload:
+The injected client fires a **cancelable** `CustomEvent` on `document` before each reload. Cancel it and update the page yourself — with Turbo:
 
 ```js
 document.addEventListener('typo3:live-reload', (event) => {
@@ -221,6 +221,28 @@ document.addEventListener('typo3:live-reload', (event) => {
 ```
 
 `event.detail.tags` contains the broadcast tags (`file:` tags included, so you can react differently to template edits). Without a listener (or without `preventDefault()`), the tab does a full reload.
+
+Without Turbo, [idiomorph](https://github.com/bigskysoftware/idiomorph) (the morph engine behind Turbo 8 page refreshes) gives you in-place updates in a few lines — only the changed DOM nodes are swapped, so scroll position, focus, open dialogs, and JS state survive an edit:
+
+```js
+document.addEventListener('typo3:live-reload', (event) => {
+    event.preventDefault()
+    void (async () => {
+        try {
+            const { Idiomorph } = await import('idiomorph')
+            const response = await fetch(window.location.href, { cache: 'no-store' })
+            if (!response.ok) throw new Error(`Unexpected response status ${response.status}`)
+            const next = new DOMParser().parseFromString(await response.text(), 'text/html')
+            Idiomorph.morph(document.body, next.body)
+        } catch (error) {
+            console.warn('[live-reload] morph failed, falling back to reload:', error)
+            window.location.reload()
+        }
+    })()
+})
+```
+
+Two practical notes from real-project use: register the listener only when `window.__liveReload` exists (so production never runs it), and add `optimizeDeps: { include: ['idiomorph'] }` to your vite config — otherwise vite discovers the dependency on first use and answers with its own forced full reload.
 
 ## Broadcasting Tags from Other Extensions
 
