@@ -8,11 +8,11 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/wazum/typo3-content-live-reload.svg)](https://packagist.org/packages/wazum/typo3-content-live-reload)
 [![License](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
 
-Vite already reloads the browser when a *file* changes. This extension adds the missing part: when an editor saves a content element, a page, or a news record, every open frontend tab that shows this record reloads — over your existing Vite dev server. Tabs that show other pages keep their scroll position, form state, and open dialogs.
+When an editor saves a content element, a page, or a news record, every open frontend tab that shows this record reloads by itself. Tabs that show other pages keep their scroll position, form state, and open dialogs. TYPO3's own cache tags decide which tabs are affected: each page knows the tags it rendered, each save knows the tags it flushed, and each tab compares the two.
 
-No polling, no file watchers, no disabled caches. TYPO3's own cache tags decide which tabs are affected: each page knows the tags it rendered, each save knows the tags it flushed, and each tab compares the two.
+How the change reaches the browser is decided by the environment, not by you: when a Vite dev server is running it is pushed over the WebSocket Vite already holds open; when none runs — a plain local install, or a shared Staging environment — each open tab polls a small endpoint instead. No file watchers, no disabled caches.
 
-One `composer require` plus one line in `vite.config.ts` — no TYPO3 configuration needed when you use [vite-asset-collector](https://packagist.org/packages/praetorius/vite-asset-collector).
+After `composer require` it works in development right away. A Vite dev server is only a nice option — when you run one, the push transport needs a single line in `vite.config.ts` (no npm package, and no TypoScript with [vite-asset-collector](https://packagist.org/packages/praetorius/vite-asset-collector)). For shared environments like Staging, see [Reload for editors](#reload-for-editors-without-a-dev-server).
 
 ![A record is saved in the TYPO3 backend, only the browser tab showing that record reloads, a second tab stays untouched](Documentation/demo.gif)
 
@@ -22,7 +22,9 @@ One `composer require` plus one line in `vite.config.ts` — no TYPO3 configurat
 composer require --dev wazum/typo3-content-live-reload
 ```
 
-Add the bundled Vite plugin to `vite.config.ts` (no npm package needed — the compiled plugin is part of the Composer package):
+That is the whole install. In the Development context it is active at once: open some frontend pages, edit content in the backend, and the right tabs reload. Without a Vite dev server the tabs poll a small endpoint on their own.
+
+If you do run a Vite dev server, add the bundled plugin to `vite.config.ts` and the reload is pushed instead of polled (no npm package needed — the compiled plugin is part of the Composer package):
 
 ```ts
 import { defineConfig } from 'vite'
@@ -38,15 +40,13 @@ export default defineConfig({
 
 The import path is relative to `vite.config.ts` — adjust it if your config file is not next to `vendor/`.
 
-That's it. Start `vite`, open some frontend pages, edit content in the backend.
-
 ## What You Get
 
 **Targeted reloads** – Only tabs that show the changed content reload. TYPO3's cache tags decide this — the same mechanism that clears the page cache knows exactly which pages changed.
 
-**Nothing for visitors** – The PHP side is only active in the configured application contexts (default: `Development`), the Vite plugin only on the dev server (`apply: 'serve'`). Nothing of this reaches production.
+**Nothing for visitors** – The extension is only active in the configured application contexts (default: `Development`), and a bare `Production` context can never activate. Outside Development a valid backend session is required, so anonymous visitors get nothing and never see the endpoint. Nothing of this reaches production.
 
-**Safe by design** – Vite not running? Then nothing is injected and nothing breaks. Saving in the backend is never slowed down. A page without tag data reloads on every change instead of missing one.
+**Safe by design** – Saving in the backend is never slowed down: the change is broadcast after the editor's response is already sent, and a failed broadcast is silent — a save never breaks. A page without tag data reloads on every change instead of missing one.
 
 **Scroll position stays** – Browsers restore it on reload by default; when a framework (for example Turbo) sets `history.scrollRestoration = 'manual'`, the client restores it itself.
 
@@ -130,7 +130,7 @@ Three details make this work reliably:
 
 ## Requirements
 
-- TYPO3 `^13.4 || ^14.3`, PHP `^8.2`, Vite `>=5`
+- TYPO3 `^13.4 || ^14.3`, PHP `^8.2`, Vite `>=5.1` (only for the dev-server transport)
 
 > [!IMPORTANT]
 > Enable the **`frontend.cache.autoTagging`** feature toggle. It is on by default only for **new** TYPO3 installations — upgraded sites must set it themselves:

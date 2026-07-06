@@ -2,7 +2,7 @@
 
 $EM_CONF[$_EXTKEY] = [
     'title' => 'Content Live Reload',
-    'description' => 'Live-reloads open browser tabs when backend record changes invalidate the content they display, driven by TYPO3 cache tags and the Vite dev server.',
+    'description' => 'Live-reloads the open frontend tabs affected by a content change in the backend, using TYPO3 cache tags to reload only the tabs that show the changed record.',
     'category' => 'misc',
     'author' => 'Wolfgang Klinger',
     'author_email' => 'wolfgang@wazum.com',

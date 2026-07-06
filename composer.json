@@ -1,7 +1,7 @@
 {
     "name": "wazum/typo3-content-live-reload",
     "type": "typo3-cms-extension",
-    "description": "Live-reloads open browser tabs when backend record changes invalidate the content they display, driven by TYPO3 cache tags and the Vite dev server.",
+    "description": "Live-reloads the open frontend tabs affected by a content change in the backend, using TYPO3 cache tags to reload only the tabs that show the changed record.",
     "license": "GPL-2.0-or-later",
     "homepage": "https://github.com/wazum/typo3-content-live-reload",
     "minimum-stability": "stable",
