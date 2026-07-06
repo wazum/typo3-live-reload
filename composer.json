@@ -28,7 +28,8 @@
         "typo3/testing-framework": "^9.0"
     },
     "suggest": {
-        "praetorius/vite-asset-collector": "Resolves the Vite dev server URL automatically when viteServerPublicUrl is not configured"
+        "praetorius/vite-asset-collector": "Resolves the Vite dev server URL automatically when viteServerPublicUrl is not configured",
+        "typo3/cms-adminpanel": "Adds the Live Reload admin panel module with connection status, cache tags, and broadcast feed"
     },
     "autoload": {
         "psr-4": {
