@@ -233,7 +233,13 @@ document.addEventListener('typo3:live-reload', (event) => {
             const response = await fetch(window.location.href, { cache: 'no-store' })
             if (!response.ok) throw new Error(`Unexpected response status ${response.status}`)
             const next = new DOMParser().parseFromString(await response.text(), 'text/html')
-            Idiomorph.morph(document.body, next.body)
+            Idiomorph.morph(document.body, next.body, {
+                callbacks: {
+                    // keep the live Admin Panel (connection status, broadcast feed):
+                    // the fetched page only contains its server-rendered placeholder
+                    beforeNodeMorphed: (oldNode) => oldNode.id !== 'TSFE_ADMIN_PANEL_FORM',
+                },
+            })
         } catch (error) {
             console.warn('[live-reload] morph failed, falling back to reload:', error)
             window.location.reload()
@@ -242,7 +248,7 @@ document.addEventListener('typo3:live-reload', (event) => {
 })
 ```
 
-Two practical notes from real-project use: register the listener only when `window.__liveReload` exists (so production never runs it), and add `optimizeDeps: { include: ['idiomorph'] }` to your vite config — otherwise vite discovers the dependency on first use and answers with its own forced full reload.
+Three practical notes from real-project use: register the listener only when `window.__liveReload` exists (so production never runs it); add `optimizeDeps: { include: ['idiomorph'] }` to your vite config — otherwise vite discovers the dependency on first use and answers with its own forced full reload; and exclude client-stateful widgets like the Admin Panel from the morph (the callback above), because the fetched HTML only carries their initial server-rendered state.
 
 ## Broadcasting Tags from Other Extensions
 
