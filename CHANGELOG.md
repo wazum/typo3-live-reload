@@ -4,6 +4,37 @@ All notable changes to Live Reload are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project follows
 [Semantic Versioning](https://semver.org/).
 
+## 2.0.0 - Unreleased
+
+The package is now **`wazum/typo3-live-reload`** (previously `wazum/typo3-content-live-reload`), because
+it no longer only reloads on content changes: editing a Fluid template, partial, layout, or ViewHelper
+class now reloads exactly the tabs whose pages rendered that file.
+
+### Added
+
+- Targeted file reloads: in the Development context, every Fluid render records the template, partial,
+  and layout files it resolves and the ViewHelper classes it instantiates; the paths are injected as
+  `file:` tags next to the cache tags. The Vite plugin's new `watch` option
+  (`liveReload({ watch: { paths: ['packages'] } })`) turns changed files into the same tags — the
+  existing tag intersection decides which tabs reload. No PHP round trip; the watcher is the signal.
+- `fileReload` extension setting (default on). While enabled, the frontend page cache is disabled in
+  the Development context so every render reflects the current files; set `fileReload = 0` to keep the
+  page cache and content-only reloads.
+
+### Changed (breaking — the rename)
+
+| 1.x | 2.0 |
+|---|---|
+| `wazum/typo3-content-live-reload` | `wazum/typo3-live-reload` |
+| extension key `content_live_reload` | `live_reload` (settings move to `EXTENSIONS/live_reload`) |
+| namespace `Wazum\ContentLiveReload` | `Wazum\LiveReload` |
+| table `tx_contentlivereload_broadcast` | `tx_livereload_broadcast` (recreate via Database Analyzer; the table only holds transient broadcasts) |
+| vite plugin import `…/typo3-content-live-reload/…` | `…/typo3-live-reload/…` |
+| virtual module `virtual:content-live-reload` | `virtual:live-reload` |
+| endpoint `/__typo3-content-changed` | `/__typo3-live-reload` |
+| events `typo3:content-changed[:*]` | `typo3:live-reload[:*]` |
+| `window.__contentLiveReload` | `window.__liveReload` |
+
 ## 1.0.0 - 2026-07-06
 
 The first stable release. When an editor saves a record, the open frontend tabs that show it reload

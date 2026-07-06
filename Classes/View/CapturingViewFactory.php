@@ -35,7 +35,7 @@ final class CapturingViewFactory implements ViewFactoryInterface, LoggerAwareInt
     {
         $view = $this->inner->create($data);
 
-        if (!$this->settings->developmentContext() || !$view instanceof FluidViewAdapter) {
+        if (!$this->settings->developmentContext() || !$this->settings->fileReloadEnabled() || !$view instanceof FluidViewAdapter) {
             return $view;
         }
 

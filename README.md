@@ -1,5 +1,5 @@
 <h1 align="center">Live Reload</h1>
-<p align="center"><em>Save a record in the backend. The right browser tabs reload. Nothing else moves.</em></p>
+<p align="center"><em>Save a record in the backend — or a Fluid partial in your editor. The right browser tabs reload. Nothing else moves.</em></p>
 <br>
 
 [![Tests](https://github.com/wazum/typo3-live-reload/workflows/Tests/badge.svg)](https://github.com/wazum/typo3-live-reload/actions)
@@ -8,11 +8,15 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/wazum/typo3-live-reload.svg)](https://packagist.org/packages/wazum/typo3-live-reload)
 [![License](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
 
-When an editor saves a content element, a page, or a news record, every open frontend tab that shows this record reloads by itself. Tabs that show other pages keep their scroll position, form state, and open dialogs. TYPO3's own cache tags decide which tabs are affected: each page knows the tags it rendered, each save knows the tags it flushed, and each tab compares the two.
+Two kinds of changes reach your browser tabs, both precisely targeted:
 
-How the change reaches the browser is decided by the environment, not by you: when a Vite dev server is running it is pushed over the WebSocket Vite already holds open; when none runs — a plain local install, or a shared Staging environment — each open tab polls a small endpoint instead. No file watchers, no disabled caches.
+**Content changes.** When an editor saves a content element, a page, or a news record, every open frontend tab that shows this record reloads by itself. TYPO3's own cache tags decide which tabs are affected: each page knows the tags it rendered, each save knows the tags it flushed, and each tab compares the two.
 
-After `composer require` it works in development right away. A Vite dev server is only a nice option — when you run one, the push transport needs a single line in `vite.config.ts` (no npm package, and no TypoScript with [vite-asset-collector](https://packagist.org/packages/praetorius/vite-asset-collector)). For shared environments like Staging, see [Reload for editors](#reload-for-editors-without-a-dev-server).
+**File changes.** When you save a Fluid template, partial, layout — or a ViewHelper class — every open tab whose page actually **rendered that file** reloads. Not every tab: each page carries a fingerprint of the files its render used, recorded live during rendering. Vite's own hot reload cannot do this, because server-rendered Fluid never enters its module graph; this extension closes exactly that gap.
+
+Tabs that are not affected keep their scroll position, form state, and open dialogs — in both cases, through the same mechanism: a changed *thing* becomes a tag, and a tab only reloads when the tag intersects its own.
+
+How a change reaches the browser is decided by the environment, not by you: when a Vite dev server is running it is pushed over the WebSocket Vite already holds open; when none runs — a plain local install, or a shared Staging environment — each open tab polls a small endpoint instead (content changes only; file reloads need the dev server's file watcher).
 
 ![A record is saved in the TYPO3 backend, only the browser tab showing that record reloads, a second tab stays untouched](Documentation/demo.gif)
 
@@ -22,9 +26,9 @@ After `composer require` it works in development right away. A Vite dev server i
 composer require --dev wazum/typo3-live-reload
 ```
 
-That is the whole install. In the Development context it is active at once: open some frontend pages, edit content in the backend, and the right tabs reload. Without a Vite dev server the tabs poll a small endpoint on their own.
+That is the whole install for content reloads. In the Development context it is active at once: open some frontend pages, edit content in the backend, and the right tabs reload. Without a Vite dev server the tabs poll a small endpoint on their own.
 
-If you do run a Vite dev server, add the bundled plugin to `vite.config.ts` and the reload is pushed instead of polled (no npm package needed — the compiled plugin is part of the Composer package):
+If you run a Vite dev server, add the bundled plugin to `vite.config.ts` — reloads are then pushed instead of polled, and the `watch` option enables the targeted **file reloads** (no npm package needed — the compiled plugin is part of the Composer package):
 
 ```ts
 import { defineConfig } from 'vite'
@@ -33,20 +37,24 @@ import { liveReload } from './vendor/wazum/typo3-live-reload/Resources/Private/V
 export default defineConfig({
     plugins: [
         // ...your other plugins
-        liveReload(),
+        liveReload({
+            watch: { paths: ['packages'] }, // your extension/template directories
+        }),
     ],
 })
 ```
 
-The import path is relative to `vite.config.ts` — adjust it if your config file is not next to `vendor/`.
+The import path is relative to `vite.config.ts` — adjust it if your config file is not next to `vendor/`. Omit the `watch` option if you only want content reloads.
 
 ## What You Get
 
-**Targeted reloads** – Only tabs that show the changed content reload. TYPO3's cache tags decide this — the same mechanism that clears the page cache knows exactly which pages changed.
+**Targeted content reloads** – Only tabs that show the changed record reload. TYPO3's cache tags decide this — the same mechanism that clears the page cache knows exactly which pages changed.
+
+**Targeted file reloads** – Edit a partial that only the start page renders, and only start-page tabs reload. The extension records, during each render, which Fluid templates, partials, layouts, and ViewHelper classes the page actually used, and injects them as `file:` tags next to the cache tags. The Vite plugin watches your directories and broadcasts changed paths — the same intersection decides who reloads.
 
 **Nothing for visitors** – The extension is only active in the configured application contexts (default: `Development`), and a bare `Production` context can never activate. Outside Development a valid backend session is required, so anonymous visitors get nothing and never see the endpoint. Nothing of this reaches production.
 
-**Safe by design** – Saving in the backend is never slowed down: the change is broadcast after the editor's response is already sent, and a failed broadcast is silent — a save never breaks. A page without tag data reloads on every change instead of missing one.
+**Safe by design** – Saving in the backend is never slowed down: the change is broadcast after the editor's response is already sent, and a failed broadcast is silent — a save never breaks. A page without tag data reloads on every change instead of missing one. File capture is equally defensive: when instrumenting a view fails, the page renders exactly as without the extension.
 
 **Scroll position stays** – Browsers restore it on reload by default; when a framework (for example Turbo) sets `history.scrollRestoration = 'manual'`, the client restores it itself.
 
@@ -64,12 +72,15 @@ The import path is relative to `vite.config.ts` — adjust it if your config fil
 ┌──────────────────────────────┐          ┌──────────────────────────────┐
 │          TYPO3 (PHP)         │          │       Vite dev server        │
 │                              │          │                              │
-│  DataHandler save/delete     │   POST   │  liveReload() plugin  │
+│  DataHandler save/delete     │   POST   │  liveReload() plugin         │
 │   └─ flushed cache tags ────────────────▶   debounce → broadcast       │
 │                              │          │        over HMR ws           │
+│  Fluid render                │          │           ▲                  │
+│   └─ used files recorded     │          │  watcher: changed template   │
+│                              │          │  or PHP file → file: tag ────┤
 │  middleware injects the      │          │           │                  │
-│  page's own cache tags       │  HMR ws  │           ▼                  │
-│  + the client module    ◀────────────── virtual:live-reload    │
+│  page's cache tags and       │  HMR ws  │           ▼                  │
+│  file: tags + the client ◀────────────── virtual:live-reload          │
 └──────────────────────────────┘          └──────────────────────────────┘
                                                        │
                                                        ▼
@@ -77,56 +88,62 @@ The import path is relative to `vite.config.ts` — adjust it if your config fil
                                      → cancelable event → reload
 ```
 
-1. **In:** a middleware reads the cache tags of the current page (from TYPO3's frontend cache data collector, plus a `pageId_<uid>` fallback) and writes them into the page as `window.__liveReload`, together with a `<script type="module">` that the Vite dev server serves.
-2. **Out:** a `clearCachePostProc` hook collects the tags TYPO3 flushes for a saved record and posts them to the dev server — after the editor's response is already sent.
-3. The dev server broadcasts once per save batch; every tab compares the tags and reloads only when they overlap.
+1. **In:** a middleware reads the cache tags of the current page (from TYPO3's frontend cache data collector, plus a `pageId_<uid>` fallback) **and the files the render used** (recorded through an instrumented view, see below) and writes them into the page as `window.__liveReload`, together with a `<script type="module">` that the Vite dev server serves.
+2. **Out, content:** a `clearCachePostProc` hook collects the tags TYPO3 flushes for a saved record and posts them to the dev server — after the editor's response is already sent.
+3. **Out, files:** the Vite plugin's watcher turns a changed file into a `file:<project-relative-path>` tag — no PHP round trip; the watcher is the change signal.
+4. The dev server broadcasts once per batch; every tab compares the tags and reloads only when they overlap.
 
-## Content Changes vs. File Changes
+## File Reloads (Fluid Templates & ViewHelpers)
 
-This extension only handles **content** changes (records in the database). **File** changes — including watching your Fluid templates — are the job of your own Vite setup, and both work side by side over the same dev server:
+Vite's HMR ends at its module graph: CSS and TypeScript hot-update beautifully, but a Fluid partial is rendered by PHP on the server and is invisible to Vite. The usual workaround — watch the template folder and full-reload *every* tab — throws away state in tabs that never rendered the file. This extension reloads only the right ones:
 
 | You change | What happens | Handled by |
 |---|---|---|
 | A record in the backend | Affected tabs reload | this extension |
+| A Fluid template, partial, or layout | **Tabs that rendered it** reload | this extension |
+| A ViewHelper class | **Tabs whose templates use it** reload | this extension |
 | CSS / TypeScript | Hot update, often without reload | Vite HMR (via vite-asset-collector) |
-| A Fluid template | Nothing, by default! | your own Vite setup — see the [bonus below](#bonus-template-reloads-in-a-few-lines) |
 
-Note that TYPO3 caches compiled Fluid templates. In Development context the cache normally notices changed files by itself; if a change does not show up (this happens most often with partials), clear the TYPO3 caches.
+### How capture works
 
-### Bonus: Template Reloads in a Few Lines
+In the Development context the extension decorates TYPO3's view factory. Every Fluid view records the template, partial, and layout files it resolves, and every ViewHelper class it instantiates — reflection gives the class file. The recorded absolute paths are normalized to **project-relative** paths (symlinks resolved first, so a Composer path-repository extension under `vendor/` maps back to its real `packages/…` source; files inside the actual vendor directory are dropped). The result is injected as `file:` tags alongside the cache tags.
 
-You do not need an extra package for template reloads — a few lines in `vite.config.ts` are enough:
+On the Vite side, `watch.paths` are handed to the dev server's existing watcher. A changed `.html` or `.php` file becomes the same project-relative `file:` tag — both sides read the same repository layout, so the strings match even when PHP runs in a container and Vite on the host. Vite's default full-reload for those files is suppressed; the targeted broadcast replaces it.
+
+### The `watch` option
 
 ```ts
-import { defineConfig, Plugin } from 'vite'
-
-function fluidReload(directories: string[]): Plugin {
-    return {
-        name: 'fluid-reload',
-        apply: 'serve',
-        configureServer(server) {
-            server.watcher.add(directories)
-            server.watcher.on('change', (file) => {
-                if (!file.endsWith('.html')) return
-                server.ws.send({ type: 'full-reload', path: '*' })
-            })
-        },
-    }
-}
-
-export default defineConfig({
-    plugins: [
-        fluidReload(['packages']),
-        // liveReload(), ...
-    ],
+liveReload({
+    watch: {
+        paths: ['packages'],          // directories to watch, relative to projectRoot (or absolute)
+        extensions: ['.html', '.php'], // default
+        projectRoot: process.cwd(),    // default; the path project-relative tags are computed against
+    },
 })
 ```
 
-Three details make this work reliably:
+`paths` reuses Vite's own watcher, so your `server.watch` options apply — for example `usePolling: true` in Docker setups where file events do not cross the mount.
 
-- `server.watcher.add(directories)` is needed because Vite only watches directories that contain modules — your template folders are not among them. Pass plain directory paths, not globs (Vite's watcher ignores globs since Vite 6).
-- `path: '*'` is needed for server-rendered pages: with a file path instead, the browser only reloads when the URL matches that file, which is never true for TYPO3 URLs.
-- The snippet reuses Vite's own watcher, so your `server.watch` options apply — for example `usePolling: true` in Docker setups where file events do not cross the mount.
+### The page-cache trade-off
+
+A page served from TYPO3's page cache skips rendering — and a tab served from cache would carry no file fingerprint and stop reacting to template edits. While file reload is enabled, the extension therefore disables the frontend **page cache in the Development context**, so every render reflects the current files. If you would rather keep the page cache (and only need content reloads), switch it off:
+
+```
+fileReload = 0
+```
+
+This removes the render instrumentation and leaves the page cache alone — content reloads keep working on cached pages, because TYPO3 restores cache tags from the cache entry.
+
+### Sharp fingerprints
+
+Fluid parses whole template files: a ViewHelper referenced anywhere in a parsed file counts as *used* by every page rendering that file — even inside a condition branch that did not execute. Partials, however, are parsed lazily, only when actually rendered. If you want page-type-specific ViewHelpers to reload only *their* pages, keep their usage inside the partial that only those pages render. (Erring happens in the safe direction either way: at worst a tab reloads that did not strictly need to.)
+
+### File-reload limitations
+
+- File reloads need the Vite dev server transport — the poll transport has no file watcher.
+- A **newly created** partial is not in any open tab's fingerprint yet; the first change after creating a file may need one manual reload.
+- Only Fluid views created through TYPO3's view factory are captured — that covers `PAGEVIEW`, `FLUIDTEMPLATE`, Extbase, and fluid-styled-content; hand-instantiated `TemplateView`s are not seen.
+- Editing a PHP file triggers the reload; whether the change is *visible* also depends on your opcache settings (`opcache.revalidate_freq=0` in development, which DDEV sets by default).
 
 ## Requirements
 
@@ -139,7 +156,7 @@ Three details make this work reliably:
 > $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['frontend.cache.autoTagging'] = true;
 > ```
 >
-> Without it, TYPO3 does not tag rendered content with `<table>_<uid>` tags, and reloads only happen for edits on the exact page you are looking at.
+> Without it, TYPO3 does not tag rendered content with `<table>_<uid>` tags, and content reloads only happen for edits on the exact page you are looking at. File reloads are unaffected.
 
 ## Configuration
 
@@ -149,6 +166,7 @@ Extension Configuration (`live_reload`) or `$GLOBALS['TYPO3_CONF_VARS']['EXTENSI
 |---|---|---|
 | `activeContexts` | `Development` | Application contexts (comma list) where the extension is active; an entry matches itself and its subcontexts (`Development` also covers `Development/Docker`); a bare `Production` entry is ignored — name the exact subcontext instead |
 | `reloadMode` | `tagged` | `tagged` = only affected tabs reload; `always` = every connected tab |
+| `fileReload` | `1` | Record rendered files and reload on template/ViewHelper changes; disables the frontend page cache in the Development context (see [the trade-off](#the-page-cache-trade-off)) |
 | `viteServerInternalUrl` | `http://localhost:5173` | Dev server URL reachable from PHP (broadcast target) |
 | `viteServerPublicUrl` | *(empty)* | Dev server URL reachable from the browser; empty = resolve automatically |
 | `pollInterval` | `3000` | Milliseconds between polls when the [editor reload](#reload-for-editors-without-a-dev-server) transport is active; minimum `1000` |
@@ -164,11 +182,11 @@ ddev exec 'curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:5173/
 
 `204` means PHP can reach the dev server. The Admin Panel's Status tab (see below) shows both URLs at one glance.
 
-The Vite plugin accepts a `debounceMs` option (default `200`) — how long broadcasts are collected before they go to the browser. An `endpoint` option also exists, but the PHP side always posts to `/__typo3-live-reload`; changing the endpoint only makes sense when a proxy rewrites that path.
+The Vite plugin accepts a `debounceMs` option (default `200`) — how long broadcasts are collected before they go to the browser; watcher events and posted tags share the same batch. An `endpoint` option also exists, but the PHP side always posts to `/__typo3-live-reload`; changing the endpoint only makes sense when a proxy rewrites that path. The `watch` option is described [above](#the-watch-option).
 
 ## Reload for Editors (Without a Dev Server)
 
-The same reload also works where no Vite dev server runs — typically a Staging environment. An editor saves a record in the backend, and every preview tab of a logged-in backend user that shows this record reloads. Only the transport changes: instead of the dev server's WebSocket, each tab asks a small endpoint every few seconds whether something changed. Tag matching, reload modes, the `typo3:live-reload` events, and the Admin Panel module all work exactly as described above — the Status tab shows which transport is active.
+The same content reload also works where no Vite dev server runs — typically a Staging environment. An editor saves a record in the backend, and every preview tab of a logged-in backend user that shows this record reloads. Only the transport changes: instead of the dev server's WebSocket, each tab asks a small endpoint every few seconds whether something changed. Tag matching, reload modes, the `typo3:live-reload` events, and the Admin Panel module all work exactly as described above — the Status tab shows which transport is active. (File reloads are a dev-server feature and do not apply here.)
 
 For this, install the package as a regular dependency instead of `--dev`, so it ships with your release:
 
@@ -202,7 +220,7 @@ document.addEventListener('typo3:live-reload', (event) => {
 })
 ```
 
-`event.detail.tags` contains the broadcast tags. Without a listener (or without `preventDefault()`), the tab does a full reload.
+`event.detail.tags` contains the broadcast tags (`file:` tags included, so you can react differently to template edits). Without a listener (or without `preventDefault()`), the tab does a full reload.
 
 ## Broadcasting Tags from Other Extensions
 
@@ -267,6 +285,7 @@ One thing remains for you when your development CSP is strict and does not use `
 - Only changes that go through TYPO3's `DataHandler` are broadcast — direct database writes are not seen.
 - Tags that extensions flush outside the DataHandler's list need the event listener above.
 - Content rendered from an external index (for example Solr) updates on reindex, not on save.
+- File reloads have their own list — see [File-reload limitations](#file-reload-limitations).
 
 ## License
 

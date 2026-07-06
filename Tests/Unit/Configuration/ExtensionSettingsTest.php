@@ -40,6 +40,15 @@ final class ExtensionSettingsTest extends TestCase
     }
 
     #[Test]
+    public function fileReloadIsEnabledByDefaultAndCanBeDisabled(): void
+    {
+        self::assertTrue($this->settingsWith([])->fileReloadEnabled());
+        self::assertTrue($this->settingsWith(['fileReload' => '1'])->fileReloadEnabled());
+        self::assertFalse($this->settingsWith(['fileReload' => '0'])->fileReloadEnabled());
+        self::assertFalse($this->settingsWith(['fileReload' => false])->fileReloadEnabled());
+    }
+
+    #[Test]
     public function allowsExactContextAndSubcontexts(): void
     {
         $settings = $this->settingsWith(['activeContexts' => 'Development']);

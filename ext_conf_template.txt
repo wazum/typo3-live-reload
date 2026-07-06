@@ -4,6 +4,9 @@ activeContexts = Development
 # cat=reload; type=options[tagged,always]; label=Reload mode: tagged = only tabs whose cache tags intersect the broadcast, always = every connected tab
 reloadMode = tagged
 
+# cat=reload; type=boolean; label=Reload on Fluid template and ViewHelper file changes (Development context, Vite transport); disables the frontend page cache in Development so every render reflects the current files
+fileReload = 1
+
 # cat=reload; type=int+; label=Poll interval in milliseconds for the editor reload transport; minimum 1000
 pollInterval = 3000
 

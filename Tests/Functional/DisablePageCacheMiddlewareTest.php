@@ -8,9 +8,9 @@ use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use TYPO3\CMS\Frontend\Cache\CacheInstruction;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Frontend\Cache\CacheInstruction;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Wazum\LiveReload\Middleware\DisablePageCacheMiddleware;
 use Wazum\LiveReload\Tests\Support\SwitchesApplicationContext;
@@ -64,6 +64,19 @@ final class DisablePageCacheMiddlewareTest extends FunctionalTestCase
 
         self::assertInstanceOf(CacheInstruction::class, $seenInstruction);
         self::assertFalse($seenInstruction->isCachingAllowed());
+    }
+
+    #[Test]
+    public function leavesCachingAloneWhenFileReloadIsDisabled(): void
+    {
+        $this->switchApplicationContext('Development');
+        $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['live_reload']['fileReload'] = '0';
+        $cacheInstruction = new CacheInstruction();
+
+        $this->process((new ServerRequest('https://example.org/', 'GET'))
+            ->withAttribute('frontend.cache.instruction', $cacheInstruction));
+
+        self::assertTrue($cacheInstruction->isCachingAllowed());
     }
 
     #[Test]

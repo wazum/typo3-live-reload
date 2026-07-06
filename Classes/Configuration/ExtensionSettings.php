@@ -82,6 +82,13 @@ final class ExtensionSettings
         };
     }
 
+    public function fileReloadEnabled(): bool
+    {
+        $value = $this->configuration()['fileReload'] ?? null;
+
+        return $value === null || (bool)$value;
+    }
+
     public function viteServerInternalUrl(): string
     {
         return rtrim($this->stringValue('viteServerInternalUrl', 'http://localhost:5173'), '/');
