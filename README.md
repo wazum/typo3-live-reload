@@ -263,6 +263,7 @@ Extension Configuration (`live_reload`) or `$GLOBALS['TYPO3_CONF_VARS']['EXTENSI
 | `fileReload` | `1` | Record rendered files and reload on template/ViewHelper changes; disables the frontend page cache in the Development context (see [the trade-off](#the-page-cache-trade-off)) |
 | `viteServerInternalUrl` | `http://localhost:5173` | Dev server URL reachable from PHP (broadcast target) |
 | `viteServerPublicUrl` | *(empty)* | Dev server URL reachable from the browser; empty = resolve automatically |
+| `viteSharedSecret` | *(empty)* | Shared secret sent with each broadcast; set the same value as the vite plugin's `secret` option so the endpoint rejects unauthenticated posts |
 | `pollInterval` | `3000` | Milliseconds between polls when the [editor reload](#reload-for-editors-without-a-dev-server) transport is active; minimum `1000` |
 | `retention` | `300` | Seconds a broadcast stays answerable for polling tabs; minimum `60` |
 
@@ -277,6 +278,8 @@ ddev exec 'curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:5173/
 `204` means PHP can reach the dev server. The Admin Panel's Status tab (see below) shows both URLs at one glance.
 
 The Vite plugin accepts a `debounceMs` option (default `200`) — how long broadcasts are collected before they go to the browser; watcher events and posted tags share the same batch. An `endpoint` option also exists, but the PHP side always posts to `/__typo3-live-reload`; changing the endpoint only makes sense when a proxy rewrites that path. The `watch` option is described [above](#the-watch-option).
+
+When the Vite dev server is reachable beyond your own machine (a LAN address, a proxied DDEV port), pair `viteSharedSecret` with the plugin's `secret` option — `liveReload({ secret: '…' })` — and the broadcast endpoint answers `401` to anything without the matching `X-Live-Reload-Secret` header. Tags are additionally sanitized on arrival: control characters are stripped, oversized tags and anything beyond 1000 tags per request are dropped.
 
 ## Admin Panel
 

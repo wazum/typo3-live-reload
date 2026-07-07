@@ -18,3 +18,6 @@ viteServerInternalUrl = http://localhost:5173
 
 # cat=reload; type=string; label=Vite dev server URL reachable from the browser; empty = resolve via vite-asset-collector when installed
 viteServerPublicUrl =
+
+# cat=reload; type=string; label=Shared secret sent to the Vite dev server with each broadcast; configure the same value in the vite plugin ("secret" option) to reject unauthenticated posts; empty = no authentication
+viteSharedSecret =

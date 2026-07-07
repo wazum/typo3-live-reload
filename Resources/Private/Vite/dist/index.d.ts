@@ -8,6 +8,7 @@ export interface LiveReloadWatchOptions {
 export interface LiveReloadOptions {
     endpoint?: string;
     debounceMs?: number;
+    secret?: string;
     watch?: LiveReloadWatchOptions;
 }
 export declare function liveReload(options?: LiveReloadOptions): Plugin;

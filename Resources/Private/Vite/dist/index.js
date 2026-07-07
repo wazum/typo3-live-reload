@@ -6,9 +6,18 @@ const EVENT_NAME = 'typo3:live-reload';
 const DEFAULT_ENDPOINT = '/__typo3-live-reload';
 const DEFAULT_DEBOUNCE_MS = 200;
 const MAXIMUM_BODY_BYTES = 256 * 1024;
+const MAXIMUM_TAG_LENGTH = 500;
+const MAXIMUM_TAGS_PER_REQUEST = 1000;
+const MAXIMUM_LOG_LENGTH = 500;
 const DEFAULT_WATCH_EXTENSIONS = ['.html', '.php'];
 const WATCH_EVENTS = ['change', 'add', 'unlink'];
 const clientFilePath = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist', 'vite-client.js');
+function sanitizeTags(tags) {
+    return tags
+        .map((tag) => tag.replace(/[\u0000-\u001f\u007f]/g, '').trim())
+        .filter((tag) => tag.length > 0 && tag.length <= MAXIMUM_TAG_LENGTH)
+        .slice(0, MAXIMUM_TAGS_PER_REQUEST);
+}
 function resolveExisting(path) {
     try {
         return realpathSync(path);
@@ -41,6 +50,7 @@ function createWatchMatcher(watch) {
 export function liveReload(options = {}) {
     const endpoint = options.endpoint ?? DEFAULT_ENDPOINT;
     const debounceMs = options.debounceMs ?? DEFAULT_DEBOUNCE_MS;
+    const secret = options.secret ?? '';
     const watchMatcher = options.watch ? createWatchMatcher(options.watch) : null;
     const pendingTags = new Set();
     let timer = null;
@@ -51,7 +61,8 @@ export function liveReload(options = {}) {
         if (tags.length === 0)
             return;
         server.ws.send({ type: 'custom', event: EVENT_NAME, data: { tags } });
-        server.config.logger.info(`[live-reload] broadcast: ${tags.join(', ')}`);
+        const logLine = tags.join(', ');
+        server.config.logger.info(`[live-reload] broadcast: ${logLine.length > MAXIMUM_LOG_LENGTH ? logLine.slice(0, MAXIMUM_LOG_LENGTH) + '…' : logLine}`);
     };
     return {
         name: 'live-reload',
@@ -94,6 +105,11 @@ export function liveReload(options = {}) {
                     response.end();
                     return;
                 }
+                if (secret !== '' && request.headers?.['x-live-reload-secret'] !== secret) {
+                    response.statusCode = 401;
+                    response.end();
+                    return;
+                }
                 void (async () => {
                     try {
                         const chunks = [];
@@ -115,7 +131,7 @@ export function liveReload(options = {}) {
                             response.end();
                             return;
                         }
-                        for (const tag of payload.tags)
+                        for (const tag of sanitizeTags(payload.tags))
                             pendingTags.add(tag);
                         if (timer)
                             clearTimeout(timer);

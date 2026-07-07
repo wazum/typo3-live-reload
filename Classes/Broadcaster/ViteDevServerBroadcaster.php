@@ -26,15 +26,21 @@ final class ViteDevServerBroadcaster implements TagBroadcasterInterface, LoggerA
             return;
         }
 
+        $options = [
+            'json' => ['tags' => array_values($tags)],
+            'timeout' => 0.5,
+            'connect_timeout' => 0.5,
+        ];
+        $secret = $this->settings->viteSharedSecret();
+        if ($secret !== '') {
+            $options['headers'] = ['X-Live-Reload-Secret' => $secret];
+        }
+
         try {
             $this->requestFactory->request(
                 $this->settings->viteServerInternalUrl() . '/__typo3-live-reload',
                 'POST',
-                [
-                    'json' => ['tags' => array_values($tags)],
-                    'timeout' => 0.5,
-                    'connect_timeout' => 0.5,
-                ],
+                $options,
             );
         } catch (Throwable $exception) {
             $this->logger?->debug('Live reload broadcast failed', ['exception' => $exception]);

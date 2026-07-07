@@ -33,6 +33,47 @@ final class ViteDevServerBroadcasterTest extends TestCase
     }
 
     #[Test]
+    public function sendsTheSharedSecretHeaderWhenConfigured(): void
+    {
+        $requestFactory = $this->createMock(RequestFactory::class);
+        $requestFactory->expects(self::once())
+            ->method('request')
+            ->with(
+                self::anything(),
+                'POST',
+                self::callback(static function (array $options): bool {
+                    return ($options['headers']['X-Live-Reload-Secret'] ?? null) === 'wonderful-secret';
+                }),
+            );
+
+        $extensionConfiguration = $this->createStub(ExtensionConfiguration::class);
+        $extensionConfiguration->method('get')->willReturn([
+            'viteServerInternalUrl' => 'http://vite:5174',
+            'viteSharedSecret' => 'wonderful-secret',
+        ]);
+        $broadcaster = new ViteDevServerBroadcaster(new ExtensionSettings($extensionConfiguration), $requestFactory);
+
+        $broadcaster->broadcast('pageId_1');
+    }
+
+    #[Test]
+    public function sendsNoSecretHeaderByDefault(): void
+    {
+        $requestFactory = $this->createMock(RequestFactory::class);
+        $requestFactory->expects(self::once())
+            ->method('request')
+            ->with(
+                self::anything(),
+                'POST',
+                self::callback(static function (array $options): bool {
+                    return !isset($options['headers']['X-Live-Reload-Secret']);
+                }),
+            );
+
+        $this->broadcaster($requestFactory)->broadcast('pageId_1');
+    }
+
+    #[Test]
     public function doesNothingWithoutTags(): void
     {
         $requestFactory = $this->createMock(RequestFactory::class);

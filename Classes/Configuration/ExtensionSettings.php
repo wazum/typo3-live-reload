@@ -104,6 +104,11 @@ final class ExtensionSettings
         return rtrim($this->stringValue('viteServerPublicUrl', ''), '/');
     }
 
+    public function viteSharedSecret(): string
+    {
+        return $this->stringValue('viteSharedSecret', '');
+    }
+
     private function stringValue(string $key, string $default): string
     {
         $value = $this->configuration()[$key] ?? null;
