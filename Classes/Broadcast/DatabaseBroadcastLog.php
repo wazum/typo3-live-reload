@@ -63,17 +63,6 @@ final class DatabaseBroadcastLog implements BroadcastLogInterface
         return $this->boundarySequence('MIN');
     }
 
-    private function boundarySequence(string $aggregate): int
-    {
-        $queryBuilder = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
-
-        return (int)$queryBuilder
-            ->addSelectLiteral($aggregate . '(uid)')
-            ->from(self::TABLE)
-            ->executeQuery()
-            ->fetchOne();
-    }
-
     private function prune(): void
     {
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
@@ -97,5 +86,16 @@ final class DatabaseBroadcastLog implements BroadcastLogInterface
         }
 
         return array_values(array_filter($decoded, is_string(...)));
+    }
+
+    private function boundarySequence(string $aggregate): int
+    {
+        $queryBuilder = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
+
+        return (int)$queryBuilder
+            ->addSelectLiteral($aggregate . '(uid)')
+            ->from(self::TABLE)
+            ->executeQuery()
+            ->fetchOne();
     }
 }

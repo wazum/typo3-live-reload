@@ -45,6 +45,21 @@ final class PollEndpointMiddleware implements MiddlewareInterface
         return $this->jsonResponse($this->payload($since));
     }
 
+    private function backendUserLoggedIn(): bool
+    {
+        return (bool)$this->context->getPropertyFromAspect('backend.user', 'isLoggedIn', false);
+    }
+
+    private function sinceParameter(ServerRequestInterface $request): ?int
+    {
+        $value = $request->getQueryParams()['since'] ?? null;
+        if (!is_string($value) || !ctype_digit($value)) {
+            return null;
+        }
+
+        return (int)$value;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -70,21 +85,6 @@ final class PollEndpointMiddleware implements MiddlewareInterface
         $sequence = max([$latestSequence, ...array_column($broadcasts, 'sequence')]);
 
         return ['sequence' => $sequence, 'broadcasts' => $broadcasts];
-    }
-
-    private function sinceParameter(ServerRequestInterface $request): ?int
-    {
-        $value = $request->getQueryParams()['since'] ?? null;
-        if (!is_string($value) || !ctype_digit($value)) {
-            return null;
-        }
-
-        return (int)$value;
-    }
-
-    private function backendUserLoggedIn(): bool
-    {
-        return (bool)$this->context->getPropertyFromAspect('backend.user', 'isLoggedIn', false);
     }
 
     /**

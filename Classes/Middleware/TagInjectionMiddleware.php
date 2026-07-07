@@ -81,6 +81,17 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         return $response->withBody($body);
     }
 
+    private function insertPosition(string $html): ?int
+    {
+        $headEnd = stripos($html, '</head>');
+        if ($headEnd !== false) {
+            return $headEnd;
+        }
+        $bodyEnd = stripos($html, '</body>');
+
+        return $bodyEnd === false ? null : $bodyEnd;
+    }
+
     private function snippet(ServerRequestInterface $request, string $html): ?string
     {
         if ($this->settings->developmentContext()) {
@@ -127,6 +138,11 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         return $this->withCspNonceMeta($snippet, $nonceValue, $html);
     }
 
+    private function backendUserLoggedIn(): bool
+    {
+        return (bool)$this->context->getPropertyFromAspect('backend.user', 'isLoggedIn', false);
+    }
+
     /**
      * @param array<string, string|int> $transportConfiguration
      */
@@ -139,70 +155,6 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
             ),
             JSON_THROW_ON_ERROR | JSON_HEX_TAG,
         );
-    }
-
-    private function clientScriptUrl(ServerRequestInterface $request): string
-    {
-        if ($this->systemResourceFactory === null || $this->systemResourcePublisher === null) {
-            return PathUtility::getPublicResourceWebPath(self::CLIENT_SCRIPT);
-        }
-
-        return (string)$this->systemResourcePublisher->generateUri(
-            $this->systemResourceFactory->createPublicResource(self::CLIENT_SCRIPT),
-            $request,
-        );
-    }
-
-    private function withCspNonceMeta(string $snippet, ?string $nonceValue, string $html): string
-    {
-        if ($nonceValue === null || str_contains($html, 'property="csp-nonce"')) {
-            return $snippet;
-        }
-
-        return '<meta property="csp-nonce" nonce="' . htmlspecialchars($nonceValue) . '">' . $snippet;
-    }
-
-    private function nonceAttribute(?string $nonceValue): string
-    {
-        return $nonceValue === null ? '' : ' nonce="' . htmlspecialchars($nonceValue) . '"';
-    }
-
-    private function backendUserLoggedIn(): bool
-    {
-        return (bool)$this->context->getPropertyFromAspect('backend.user', 'isLoggedIn', false);
-    }
-
-    private function declareNonceUsage(ServerRequestInterface $request): void
-    {
-        if ($request->getAttribute('nonce') === null) {
-            return;
-        }
-
-        $policyBag = $request->getAttribute('csp.policyBag');
-        if ($policyBag instanceof PolicyBag) {
-            $policyBag->behavior->useNonce = true;
-        }
-    }
-
-    private function insertPosition(string $html): ?int
-    {
-        $headEnd = stripos($html, '</head>');
-        if ($headEnd !== false) {
-            return $headEnd;
-        }
-        $bodyEnd = stripos($html, '</body>');
-
-        return $bodyEnd === false ? null : $bodyEnd;
-    }
-
-    private function mode(ServerRequestInterface $request): string
-    {
-        $override = $request->getAttribute('live_reload.mode');
-
-        return match ($override) {
-            'tagged', 'always', 'paused' => $override,
-            default => $this->settings->reloadMode(),
-        };
     }
 
     /**
@@ -230,10 +182,58 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         return array_keys($tags);
     }
 
+    private function mode(ServerRequestInterface $request): string
+    {
+        $override = $request->getAttribute('live_reload.mode');
+
+        return match ($override) {
+            'tagged', 'always', 'paused' => $override,
+            default => $this->settings->reloadMode(),
+        };
+    }
+
     private function nonceValue(ServerRequestInterface $request): ?string
     {
         $nonce = $request->getAttribute('nonce');
 
         return $nonce instanceof ConsumableNonce ? $nonce->consume() : null;
+    }
+
+    private function nonceAttribute(?string $nonceValue): string
+    {
+        return $nonceValue === null ? '' : ' nonce="' . htmlspecialchars($nonceValue) . '"';
+    }
+
+    private function clientScriptUrl(ServerRequestInterface $request): string
+    {
+        if ($this->systemResourceFactory === null || $this->systemResourcePublisher === null) {
+            return PathUtility::getPublicResourceWebPath(self::CLIENT_SCRIPT);
+        }
+
+        return (string)$this->systemResourcePublisher->generateUri(
+            $this->systemResourceFactory->createPublicResource(self::CLIENT_SCRIPT),
+            $request,
+        );
+    }
+
+    private function withCspNonceMeta(string $snippet, ?string $nonceValue, string $html): string
+    {
+        if ($nonceValue === null || str_contains($html, 'property="csp-nonce"')) {
+            return $snippet;
+        }
+
+        return '<meta property="csp-nonce" nonce="' . htmlspecialchars($nonceValue) . '">' . $snippet;
+    }
+
+    private function declareNonceUsage(ServerRequestInterface $request): void
+    {
+        if ($request->getAttribute('nonce') === null) {
+            return;
+        }
+
+        $policyBag = $request->getAttribute('csp.policyBag');
+        if ($policyBag instanceof PolicyBag) {
+            $policyBag->behavior->useNonce = true;
+        }
     }
 }

@@ -99,6 +99,13 @@ final class ExtensionSettings
         return rtrim($this->stringValue('viteServerPublicUrl', ''), '/');
     }
 
+    private function stringValue(string $key, string $default): string
+    {
+        $value = $this->configuration()[$key] ?? null;
+
+        return is_string($value) && trim($value) !== '' ? trim($value) : $default;
+    }
+
     private function integerValue(string $key, int $default): int
     {
         $value = $this->configuration()[$key] ?? null;
@@ -110,13 +117,6 @@ final class ExtensionSettings
         }
 
         return $default;
-    }
-
-    private function stringValue(string $key, string $default): string
-    {
-        $value = $this->configuration()[$key] ?? null;
-
-        return is_string($value) && trim($value) !== '' ? trim($value) : $default;
     }
 
     /**
