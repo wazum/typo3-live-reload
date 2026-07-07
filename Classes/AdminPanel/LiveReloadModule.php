@@ -59,14 +59,6 @@ final class LiveReloadModule extends AbstractModule implements RequestEnricherIn
         return [$this->versionedResource('EXT:live_reload/Resources/Public/Css/admin-panel.css')];
     }
 
-    private function versionedResource(string $resource): string
-    {
-        $absolutePath = GeneralUtility::getFileAbsFileName($resource);
-        $modificationTime = is_file($absolutePath) ? (string)filemtime($absolutePath) : '';
-
-        return $resource . ($modificationTime !== '' ? '?' . $modificationTime : '');
-    }
-
     public function enrich(ServerRequestInterface $request): ServerRequestInterface
     {
         $mode = $this->configurationService->getConfigurationOption('live_reload', 'mode');
@@ -85,5 +77,13 @@ final class LiveReloadModule extends AbstractModule implements RequestEnricherIn
         $view->assign('mode', $this->configurationService->getConfigurationOption('live_reload', 'mode'));
 
         return $view->render('AdminPanel/Settings');
+    }
+
+    private function versionedResource(string $resource): string
+    {
+        $absolutePath = GeneralUtility::getFileAbsFileName($resource);
+        $modificationTime = is_file($absolutePath) ? (string)filemtime($absolutePath) : '';
+
+        return $resource . ($modificationTime !== '' ? '?' . $modificationTime : '');
     }
 }
