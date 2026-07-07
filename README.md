@@ -1,3 +1,6 @@
+<p align="center">
+  <img src="Resources/Public/Icons/Extension.svg" alt="Live Reload" width="96" height="96">
+</p>
 <h1 align="center">Live Reload</h1>
 <p align="center"><em>Save a record in the backend — or a Fluid partial in your editor. The right browser tabs reload. Nothing else moves.</em></p>
 <br>
