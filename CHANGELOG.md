@@ -4,6 +4,25 @@ All notable changes to Live Reload are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project follows
 [Semantic Versioning](https://semver.org/).
 
+## 2.1.0 - 2026-07-07
+
+### Added
+
+- Optional shared-secret authentication between TYPO3 and the Vite dev server: set `viteSharedSecret`
+  in the extension configuration and the same value in the vite plugin (`liveReload({ secret: '…' })`);
+  the broadcast endpoint then answers `401` to posts without the matching `X-Live-Reload-Secret` header.
+  Incoming tags are sanitized either way: control characters stripped, oversized tags and anything
+  beyond 1000 tags per request dropped, log output capped.
+
+### Fixed
+
+- The poll response cursor now covers every broadcast actually returned, so an entry appended while
+  the response was being built is no longer delivered twice.
+- The Vite broadcast endpoint matches its path exactly (previously any path with the endpoint as
+  prefix was accepted) and rejects request bodies over 256 KB.
+- File capture and the development page-cache bypass respect `activeContexts`: a configuration
+  without `Development` leaves development requests completely untouched.
+
 ## 2.0.0 - 2026-07-06
 
 The package is now **`wazum/typo3-live-reload`** (previously `wazum/typo3-content-live-reload`), because
