@@ -67,6 +67,19 @@ final class DisablePageCacheMiddlewareTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function leavesCachingAloneWhenDevelopmentIsNotAnActiveContext(): void
+    {
+        $this->switchApplicationContext('Development');
+        $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['live_reload']['activeContexts'] = 'Production/Staging';
+        $cacheInstruction = new CacheInstruction();
+
+        $this->process((new ServerRequest('https://example.org/', 'GET'))
+            ->withAttribute('frontend.cache.instruction', $cacheInstruction));
+
+        self::assertTrue($cacheInstruction->isCachingAllowed());
+    }
+
+    #[Test]
     public function leavesCachingAloneWhenFileReloadIsDisabled(): void
     {
         $this->switchApplicationContext('Development');

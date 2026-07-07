@@ -25,7 +25,7 @@ final class DisablePageCacheMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (!$this->settings->developmentContext() || !$this->settings->fileReloadEnabled()) {
+        if (!$this->settings->fileCaptureActive()) {
             return $handler->handle($request);
         }
 

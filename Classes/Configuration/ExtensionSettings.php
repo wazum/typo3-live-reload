@@ -89,6 +89,11 @@ final class ExtensionSettings
         return $value === null || (bool)$value;
     }
 
+    public function fileCaptureActive(): bool
+    {
+        return $this->contextAllowed() && $this->developmentContext() && $this->fileReloadEnabled();
+    }
+
     public function viteServerInternalUrl(): string
     {
         return rtrim($this->stringValue('viteServerInternalUrl', 'http://localhost:5173'), '/');

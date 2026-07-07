@@ -51,6 +51,17 @@ final class CapturingViewFactoryTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function capturesNothingWhenDevelopmentIsNotAnActiveContext(): void
+    {
+        $this->switchApplicationContext('Development');
+        $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['live_reload']['activeContexts'] = 'Production/Staging';
+
+        $this->createFixtureView()->render();
+
+        self::assertSame([], $this->get(RenderedFileCollector::class)->fileTags($this->extensionPath()));
+    }
+
+    #[Test]
     public function capturesEvenWhenTheCompileCacheIsWarm(): void
     {
         $this->switchApplicationContext('Testing');
