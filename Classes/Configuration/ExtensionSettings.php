@@ -45,11 +45,17 @@ final class ExtensionSettings
     }
 
     /**
+     * A missing setting defaults to Development; a present but empty
+     * value means "disabled everywhere".
+     *
      * @return array<string>
      */
     public function activeContexts(): array
     {
-        $raw = $this->stringValue('activeContexts', 'Development');
+        $raw = $this->configuration()['activeContexts'] ?? null;
+        if (!is_string($raw)) {
+            $raw = 'Development';
+        }
 
         return array_values(array_filter(array_map('trim', explode(',', $raw))));
     }

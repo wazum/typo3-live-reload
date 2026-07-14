@@ -1,4 +1,4 @@
-# cat=reload; type=string; label=Comma-separated application contexts in which the extension is active; an entry matches itself and its subcontexts; a bare "Production" entry is ignored
+# cat=reload; type=string; label=Comma-separated application contexts in which the extension is active; an entry matches itself and its subcontexts; a bare "Production" entry is ignored; empty = disabled everywhere
 activeContexts = Development
 
 # cat=reload; type=options[tagged,always]; label=Reload mode: tagged = only tabs whose cache tags intersect the broadcast, always = every connected tab

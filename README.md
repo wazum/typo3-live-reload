@@ -258,7 +258,7 @@ Extension Configuration (`live_reload`) or `$GLOBALS['TYPO3_CONF_VARS']['EXTENSI
 
 | Setting | Default | Purpose |
 |---|---|---|
-| `activeContexts` | `Development` | Application contexts (comma list) where the extension is active; an entry matches itself and its subcontexts (`Development` also covers `Development/Docker`); a bare `Production` entry is ignored — name the exact subcontext instead |
+| `activeContexts` | `Development` | Application contexts (comma list) where the extension is active; an entry matches itself and its subcontexts (`Development` also covers `Development/Docker`); a bare `Production` entry is ignored — name the exact subcontext instead; an empty value disables the extension everywhere |
 | `reloadMode` | `tagged` | `tagged` = only affected tabs reload; `always` = every connected tab |
 | `fileReload` | `1` | Record rendered files and reload on template/ViewHelper changes; disables the frontend page cache in the Development context (see [the trade-off](#the-page-cache-trade-off)) |
 | `viteServerInternalUrl` | `http://localhost:5173` | Dev server URL reachable from PHP (broadcast target) |

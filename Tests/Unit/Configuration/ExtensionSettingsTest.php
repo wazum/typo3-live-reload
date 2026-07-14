@@ -70,6 +70,18 @@ final class ExtensionSettingsTest extends TestCase
     }
 
     #[Test]
+    public function anEmptyActiveContextsValueDisablesEveryContext(): void
+    {
+        $settings = $this->settingsWith(['activeContexts' => '']);
+
+        self::assertSame([], $settings->activeContexts());
+        self::assertFalse($settings->contextAllowedFor('Development'));
+
+        $whitespaceOnly = $this->settingsWith(['activeContexts' => ' , ']);
+        self::assertFalse($whitespaceOnly->contextAllowedFor('Development'));
+    }
+
+    #[Test]
     public function ignoresABareProductionEntry(): void
     {
         $settings = $this->settingsWith(['activeContexts' => 'Production']);
