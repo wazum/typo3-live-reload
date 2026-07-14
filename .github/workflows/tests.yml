@@ -3,8 +3,12 @@ name: Tests
 on:
   push:
     branches:
-      - '**'
+      - main
   pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   php:
@@ -12,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['8.2', '8.3', '8.4']
+        php: ['8.2', '8.3', '8.4', '8.5']
         typo3: ['^13.4', '^14.3']
         exclude:
           - php: '8.2'
@@ -34,6 +38,14 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
+      - run: composer validate --strict
+      - name: Check that all version numbers match
+        run: |
+          composer_version=$(php -r 'echo json_decode(file_get_contents("composer.json"), true)["extra"]["typo3/cms"]["version"];')
+          emconf_version=$(php -r '$_EXTKEY = "live_reload"; $EM_CONF = []; include "ext_emconf.php"; echo $EM_CONF[$_EXTKEY]["version"];')
+          npm_version=$(php -r 'echo json_decode(file_get_contents("Resources/Private/Vite/package.json"), true)["version"];')
+          echo "composer.json: $composer_version, ext_emconf.php: $emconf_version, package.json: $npm_version"
+          test "$composer_version" = "$emconf_version" && test "$composer_version" = "$npm_version"
       - run: composer install --no-interaction --no-progress
       - run: composer run cs:check
       - run: composer run phpstan
