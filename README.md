@@ -267,7 +267,7 @@ Extension Configuration (`live_reload`) or `$GLOBALS['TYPO3_CONF_VARS']['EXTENSI
 | `pollInterval` | `3000` | Milliseconds between polls when the [editor reload](#reload-for-editors-without-a-dev-server) transport is active; minimum `1000` |
 | `retention` | `300` | Seconds a broadcast stays answerable for polling tabs; minimum `60` |
 
-The browser-facing URL is resolved in this order: the explicit setting → vite-asset-collector's `auto` chain (which understands, for example, `ddev-vite-sidecar`'s `VITE_SERVER_URI`) → none. With none, the extension stays inactive for that request.
+The browser-facing URL is resolved in this order: the explicit setting → vite-asset-collector's `auto` chain (which understands, for example, `ddev-vite-sidecar`'s `VITE_SERVER_URI`) → none. With none, the page falls back to the poll transport: content reloads keep working, only file reloads need the dev server. The Admin Panel's Status tab shows which transport the page uses.
 
 `viteServerInternalUrl` is where **PHP** posts the flushed tags. In Docker/DDEV setups `http://localhost:5173` is only correct when Vite runs in the same container as PHP-FPM. Broadcast failures are silent on purpose (a save must never break), so when reloads do not happen, first check the URL from the PHP side:
 
@@ -287,7 +287,7 @@ With [EXT:adminpanel](https://packagist.org/packages/typo3/cms-adminpanel) insta
 
 The panel bar itself shows the essentials at one glance, without opening the module: a connection dot (green and gently pulsing while the dev server is connected, a red ring when the connection was lost, with a short flash for every received broadcast), the reload mode — but only when it differs from the normal `tagged` — and the time of this tab's last update. The everyday healthy state is just the green dot and a time like `21:58`; anything unusual (`paused`, `always`, a lost connection) announces itself by appearing. Animations respect `prefers-reduced-motion`.
 
-A **gray ring** means the page never connected. This happens when the page was loaded while the dev server was down: without a dev server there is nothing to inject, so such a tab cannot hear any broadcast — including the one that would reload it. Reload the tab once after the dev server is back; from then on it heals itself.
+A **gray ring** means the page never connected. This happens when the page was loaded while a dev server URL was resolvable but the server itself was down: the page references the dev server's client module, which never loads, so such a tab cannot hear any broadcast — including the one that would reload it. Reload the tab once after the dev server is back; from then on it heals itself. (When no dev server URL resolves at all, the page uses the poll transport instead and still receives content reloads.)
 
 The module itself has three tabs:
 
