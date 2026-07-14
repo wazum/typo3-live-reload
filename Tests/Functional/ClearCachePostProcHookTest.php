@@ -104,6 +104,36 @@ final class ClearCachePostProcHookTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function normalizesTagsBeforeBroadcasting(): void
+    {
+        $collectorBroadcaster = new RecordingBroadcaster();
+        $collector = new BroadcastTagCollector($collectorBroadcaster, new RecordingDetacher());
+        $eventDispatcher = new class implements EventDispatcherInterface {
+            public function dispatch(object $event): object
+            {
+                if ($event instanceof ModifyBroadcastTagsEvent) {
+                    $event->addTags('', "invalid \xB1\x31 utf8", str_repeat('a', 501), " control\x00chars ");
+                }
+
+                return $event;
+            }
+        };
+        $hook = new ClearCachePostProcHook(
+            $this->get(\Wazum\LiveReload\Configuration\ExtensionSettings::class),
+            $collector,
+            $eventDispatcher,
+        );
+
+        $hook->postProcessClearCache(
+            ['table' => 'tt_content', 'uid' => 5, 'uid_page' => 42, 'tags' => ['tt_content_5' => true]],
+            GeneralUtility::makeInstance(DataHandler::class),
+        );
+        $collector->flush();
+
+        self::assertSame([['tt_content_5', 'controlchars']], $collectorBroadcaster->received);
+    }
+
+    #[Test]
     public function eventListenersCanAddBroadcastTags(): void
     {
         $collectorBroadcaster = new RecordingBroadcaster();

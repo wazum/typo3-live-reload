@@ -9,6 +9,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Throwable;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
+use Wazum\LiveReload\Broadcast\TagNormalizer;
 use Wazum\LiveReload\Collector\BroadcastTagCollector;
 use Wazum\LiveReload\Configuration\ExtensionSettings;
 use Wazum\LiveReload\Event\ModifyBroadcastTagsEvent;
@@ -21,6 +22,7 @@ final class ClearCachePostProcHook implements LoggerAwareInterface
         private readonly ExtensionSettings $settings,
         private readonly BroadcastTagCollector $collector,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly TagNormalizer $tagNormalizer = new TagNormalizer(),
     ) {
     }
 
@@ -47,7 +49,7 @@ final class ClearCachePostProcHook implements LoggerAwareInterface
                 $tags,
             ));
 
-            $this->collector->add(...$event->getTags());
+            $this->collector->add(...$this->tagNormalizer->normalize($event->getTags()));
         } catch (Throwable $exception) {
             $this->logger?->warning('Collecting broadcast tags failed', ['exception' => $exception]);
         }
