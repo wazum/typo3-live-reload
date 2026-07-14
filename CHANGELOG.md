@@ -4,6 +4,38 @@ All notable changes to Live Reload are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project follows
 [Semantic Versioning](https://semver.org/).
 
+## 2.2.0 - 2026-07-14
+
+### Added
+
+- Broadcast tags are normalized in one place before any transport: empty, invalid-UTF-8 and oversized
+  tags are dropped, control characters stripped, duplicates removed, and the count capped. The rules
+  the vite endpoint already applied on arrival now also protect the poll transport and the database log.
+
+### Changed
+
+- An empty `activeContexts` value now disables the extension everywhere; only a missing setting
+  defaults to `Development`.
+- The composer archive no longer ships the demo media and the vite plugin's TypeScript sources —
+  about 190 KB instead of 2.5 MB. The compiled plugin in `dist/` is unchanged.
+
+### Fixed
+
+- Every broadcast transport catches and logs its own failure: a database error can no longer throw
+  in the shutdown phase or skip the vite broadcast behind it.
+- File reloads survive a symlink in the project path: the path prefix is now resolved like the
+  recorded files; previously no file tag ever matched and file reloads silently stopped.
+- The poll client runs only one poll at a time and never moves its cursor backwards, so a tab
+  becoming visible again can no longer replay old broadcasts; a payload without a numeric sequence
+  counts as a failed poll.
+- The Admin Panel status shows `poll` when no dev server URL resolves in Development — previously it
+  always claimed `vite`. The README describes the poll fallback the same way now.
+
+### Security
+
+- The vite broadcast endpoint rejects cross-site browser requests (`Sec-Fetch-Site: cross-site`),
+  requires a JSON content type, and compares the shared secret in constant time.
+
 ## 2.1.0 - 2026-07-07
 
 ### Added
