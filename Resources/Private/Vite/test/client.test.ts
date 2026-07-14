@@ -306,6 +306,55 @@ describe('poll client transport', () => {
         expect(reload).toHaveBeenCalledTimes(1)
     })
 
+    it('does not start a second poll while one is still in flight', async () => {
+        const client = await bootPollClientWithServer({ tags: ['pageId_1'], mode: 'tagged' })
+        let resolvePending: (value: unknown) => void = () => {}
+        const pendingFetch = vi.fn(() => new Promise((resolve) => (resolvePending = resolve)))
+        vi.stubGlobal('fetch', pendingFetch)
+        await client.advance(pollInterval)
+        expect(pendingFetch).toHaveBeenCalledTimes(1)
+        setVisibility('hidden')
+        setVisibility('visible')
+        await flushMicrotasks()
+        expect(pendingFetch).toHaveBeenCalledTimes(1)
+        resolvePending({ ok: true, json: async () => ({ sequence: 6 }) })
+        await flushMicrotasks()
+    })
+
+    it('ignores a response with an older sequence instead of replaying it', async () => {
+        const client = await bootPollClientWithServer({ tags: ['pageId_1'], mode: 'tagged', sequence: 7 })
+        const staleAnswer = vi.fn(async () => ({
+            ok: true,
+            json: async () => ({ sequence: 3, broadcasts: [{ sequence: 3, tags: ['pageId_1'] }] }),
+        }))
+        vi.stubGlobal('fetch', staleAnswer)
+        await client.advance(pollInterval)
+        expect(reload).not.toHaveBeenCalled()
+        vi.stubGlobal('fetch', client.server.fetchMock)
+        await client.advance(pollInterval)
+        expect(client.server.fetchMock).toHaveBeenLastCalledWith('/__live-reload/poll?since=7', {
+            credentials: 'same-origin',
+        })
+    })
+
+    it('treats a payload without a numeric sequence as a failed poll', async () => {
+        const states: boolean[] = []
+        const record = (event: Event) => states.push((event as CustomEvent).detail.connected)
+        document.addEventListener('typo3:live-reload:connection', record)
+        const client = await bootPollClientWithServer({ tags: ['pageId_1'], mode: 'tagged', sequence: 5 })
+        const malformedAnswer = vi.fn(async () => ({ ok: true, json: async () => ({}) }))
+        vi.stubGlobal('fetch', malformedAnswer)
+        await client.advance(pollInterval)
+        vi.stubGlobal('fetch', client.server.fetchMock)
+        await client.advance(pollInterval)
+        document.removeEventListener('typo3:live-reload:connection', record)
+        expect(reload).not.toHaveBeenCalled()
+        expect(states).toEqual([true, false, true])
+        expect(client.server.fetchMock).toHaveBeenLastCalledWith('/__live-reload/poll?since=5', {
+            credentials: 'same-origin',
+        })
+    })
+
     it('records a stale response while paused and reloads when leaving paused mode', async () => {
         const client = await bootPollClientWithServer({ tags: ['pageId_1'], mode: 'paused' })
         client.server.stale()

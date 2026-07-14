@@ -15,6 +15,7 @@ if (configuration && typeof configuration.endpoint === 'string' && typeof config
     const core = createClientCore(configuration)
     let lastSequence = typeof configuration.sequence === 'number' ? configuration.sequence : 0
     let connected = true
+    let inFlight = false
     let timer: ReturnType<typeof setTimeout> | undefined
 
     const announceConnectionChange = (state: boolean) => {
@@ -30,25 +31,35 @@ if (configuration && typeof configuration.endpoint === 'string' && typeof config
     }
 
     const poll = async () => {
-        if (document.visibilityState === 'hidden') return
+        // The in-flight poll schedules the next one; a second concurrent
+        // poll could deliver responses out of order.
+        if (document.visibilityState === 'hidden' || inFlight) return
+        inFlight = true
         try {
             const response = await fetch(endpoint + '?since=' + lastSequence, { credentials: 'same-origin' })
             if (!response.ok) throw new Error(String(response.status))
             const payload = (await response.json()) as {
-                sequence: number
-                broadcasts?: { sequence: number; tags: string[] }[]
+                sequence?: unknown
+                broadcasts?: { sequence?: unknown; tags: string[] }[]
                 stale?: boolean
             }
-            lastSequence = payload.sequence
+            if (typeof payload.sequence !== 'number') throw new Error('malformed payload')
+            const previousSequence = lastSequence
+            lastSequence = Math.max(lastSequence, payload.sequence)
             announceConnectionChange(true)
             if (payload.stale) core.forceReload()
             else if (Array.isArray(payload.broadcasts)) {
-                for (const broadcast of payload.broadcasts) core.handleBroadcast(broadcast)
+                for (const broadcast of payload.broadcasts) {
+                    if (typeof broadcast.sequence === 'number' && broadcast.sequence <= previousSequence) continue
+                    core.handleBroadcast(broadcast)
+                }
             }
         } catch {
             announceConnectionChange(false)
+        } finally {
+            inFlight = false
+            schedulePoll()
         }
-        schedulePoll()
     }
 
     document.addEventListener('visibilitychange', () => {
