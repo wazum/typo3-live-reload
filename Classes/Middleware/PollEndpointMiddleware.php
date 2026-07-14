@@ -18,8 +18,6 @@ final class PollEndpointMiddleware implements MiddlewareInterface
 {
     public const PATH = '/__live-reload/poll';
 
-    private const MAXIMUM_BROADCASTS = 100;
-
     public function __construct(
         private readonly ExtensionSettings $settings,
         private readonly BroadcastLogInterface $broadcastLog,
@@ -73,7 +71,7 @@ final class PollEndpointMiddleware implements MiddlewareInterface
             return ['sequence' => $latestSequence, 'broadcasts' => []];
         }
         if ($since + 1 < $this->broadcastLog->oldestSequence()
-            || $latestSequence - $since > self::MAXIMUM_BROADCASTS
+            || $latestSequence - $since > BroadcastLogInterface::MAXIMUM_BATCH_SIZE
         ) {
             return ['sequence' => $latestSequence, 'stale' => true];
         }

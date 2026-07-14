@@ -12,8 +12,6 @@ final class DatabaseBroadcastLog implements BroadcastLogInterface
 {
     private const TABLE = 'tx_livereload_broadcast';
 
-    private const MAXIMUM_ROWS = 100;
-
     public function __construct(
         private readonly ConnectionPool $connectionPool,
         private readonly ExtensionSettings $settings,
@@ -40,7 +38,7 @@ final class DatabaseBroadcastLog implements BroadcastLogInterface
                 $queryBuilder->createNamedParameter($sequence, Connection::PARAM_INT),
             ))
             ->orderBy('uid')
-            ->setMaxResults(self::MAXIMUM_ROWS)
+            ->setMaxResults(self::MAXIMUM_BATCH_SIZE)
             ->executeQuery()
             ->fetchAllAssociative();
 

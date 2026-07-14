@@ -7,6 +7,13 @@ namespace Wazum\LiveReload\Broadcast;
 interface BroadcastLogInterface
 {
     /**
+     * since() returns at most this many entries, and the poll endpoint
+     * answers "stale" for any larger gap — one constant, so the two
+     * limits can never drift apart.
+     */
+    public const MAXIMUM_BATCH_SIZE = 100;
+
+    /**
      * @param array<string> $tags
      */
     public function append(array $tags): void;

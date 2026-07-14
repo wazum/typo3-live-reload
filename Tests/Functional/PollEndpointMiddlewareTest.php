@@ -15,6 +15,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Wazum\LiveReload\Broadcast\BroadcastLogInterface;
 use Wazum\LiveReload\Broadcast\DatabaseBroadcastLog;
 use Wazum\LiveReload\Configuration\ExtensionSettings;
 use Wazum\LiveReload\Middleware\PollEndpointMiddleware;
@@ -207,6 +208,25 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function deliversAGapOfExactlyTheBatchLimitCompletely(): void
+    {
+        $this->logInBackendUser();
+        $connection = $this->get(ConnectionPool::class)->getConnectionForTable('tx_livereload_broadcast');
+        foreach (range(1, BroadcastLogInterface::MAXIMUM_BATCH_SIZE) as $index) {
+            $connection->insert('tx_livereload_broadcast', [
+                'tags' => '["pageId_' . $index . '"]',
+                'crdate' => time(),
+            ]);
+        }
+
+        $payload = $this->payload($this->poll('/__live-reload/poll', ['since' => '0']));
+
+        self::assertArrayNotHasKey('stale', $payload);
+        self::assertCount(BroadcastLogInterface::MAXIMUM_BATCH_SIZE, $payload['broadcasts']);
+        self::assertSame(BroadcastLogInterface::MAXIMUM_BATCH_SIZE, $payload['sequence']);
+    }
+
+    #[Test]
     public function cursorNeverFallsBehindTheReturnedBroadcasts(): void
     {
         $this->switchApplicationContext('Development');
@@ -214,7 +234,7 @@ final class PollEndpointMiddlewareTest extends FunctionalTestCase
         // since() query: the log already returns sequence 2 while the earlier
         // cursor read only saw 1. The response cursor must be 2, or the client
         // would receive sequence 2 again on its next poll.
-        $raceyLog = new class implements \Wazum\LiveReload\Broadcast\BroadcastLogInterface {
+        $raceyLog = new class implements BroadcastLogInterface {
             public function append(array $tags): void
             {
             }
