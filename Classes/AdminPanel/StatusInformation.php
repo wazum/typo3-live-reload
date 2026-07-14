@@ -48,7 +48,7 @@ final class StatusInformation extends AbstractSubModule implements DataProviderI
             'activeContexts' => implode(', ', $this->settings->activeContexts()),
             'mode' => is_string($modeOverride) ? $modeOverride : $this->settings->reloadMode(),
             'modeOverridden' => is_string($modeOverride),
-            'transport' => $this->settings->developmentContext() ? 'vite' : 'poll',
+            'transport' => $this->settings->developmentContext() && $resolution['url'] !== null ? 'vite' : 'poll',
             'pollEndpoint' => PollEndpointMiddleware::PATH,
             'pollInterval' => $this->settings->pollInterval(),
             'resolvedUrl' => $resolution['url'],

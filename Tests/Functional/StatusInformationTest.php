@@ -48,13 +48,24 @@ final class StatusInformationTest extends FunctionalTestCase
     }
 
     #[Test]
-    public function reportsViteTransportInDevelopmentContext(): void
+    public function reportsViteTransportInDevelopmentContextWithAResolvedUrl(): void
+    {
+        $this->switchApplicationContext('Development');
+        $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['live_reload']['viteServerPublicUrl'] = 'http://localhost:5173';
+
+        $data = $this->statusInformation()->getDataToStore(new ServerRequest('https://example.org/', 'GET'));
+
+        self::assertSame('vite', $data->getArrayCopy()['transport']);
+    }
+
+    #[Test]
+    public function reportsPollTransportInDevelopmentWhenNoDevServerUrlResolves(): void
     {
         $this->switchApplicationContext('Development');
 
         $data = $this->statusInformation()->getDataToStore(new ServerRequest('https://example.org/', 'GET'));
 
-        self::assertSame('vite', $data->getArrayCopy()['transport']);
+        self::assertSame('poll', $data->getArrayCopy()['transport']);
     }
 
     #[Test]
@@ -72,6 +83,7 @@ final class StatusInformationTest extends FunctionalTestCase
     public function rendersTheViteTransportWithoutPollDetails(): void
     {
         $this->switchApplicationContext('Development');
+        $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['live_reload']['viteServerPublicUrl'] = 'http://localhost:5173';
         $statusInformation = $this->statusInformation();
         $data = $statusInformation->getDataToStore(new ServerRequest('https://example.org/', 'GET'));
 
