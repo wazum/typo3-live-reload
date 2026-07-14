@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from 'node:crypto'
 import { readFileSync, realpathSync } from 'node:fs'
 import { basename, dirname, isAbsolute, join, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -27,6 +28,16 @@ export interface LiveReloadOptions {
     debounceMs?: number
     secret?: string
     watch?: LiveReloadWatchOptions
+}
+
+function matchesSecret(provided: unknown, secret: string): boolean {
+    if (typeof provided !== 'string') return false
+    // Hashing both sides gives equal lengths, so the comparison time
+    // never depends on the secret.
+    return timingSafeEqual(
+        createHash('sha256').update(provided).digest(),
+        createHash('sha256').update(secret).digest(),
+    )
 }
 
 function sanitizeTags(tags: string[]): string[] {
@@ -122,7 +133,20 @@ export function liveReload(options: LiveReloadOptions = {}): Plugin {
                     response.end()
                     return
                 }
-                if (secret !== '' && request.headers?.['x-live-reload-secret'] !== secret) {
+                // TYPO3 posts server-side and never sends Sec-Fetch-Site;
+                // a browser script on a foreign origin always does.
+                if (request.headers?.['sec-fetch-site'] === 'cross-site') {
+                    response.statusCode = 403
+                    response.end()
+                    return
+                }
+                const contentType = request.headers?.['content-type']
+                if (typeof contentType !== 'string' || !contentType.toLowerCase().includes('application/json')) {
+                    response.statusCode = 415
+                    response.end()
+                    return
+                }
+                if (secret !== '' && !matchesSecret(request.headers?.['x-live-reload-secret'], secret)) {
                     response.statusCode = 401
                     response.end()
                     return

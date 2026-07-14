@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { readFileSync, realpathSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +13,13 @@ const MAXIMUM_LOG_LENGTH = 500;
 const DEFAULT_WATCH_EXTENSIONS = ['.html', '.php'];
 const WATCH_EVENTS = ['change', 'add', 'unlink'];
 const clientFilePath = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist', 'vite-client.js');
+function matchesSecret(provided, secret) {
+    if (typeof provided !== 'string')
+        return false;
+    // Hashing both sides gives equal lengths, so the comparison time
+    // never depends on the secret.
+    return timingSafeEqual(createHash('sha256').update(provided).digest(), createHash('sha256').update(secret).digest());
+}
 function sanitizeTags(tags) {
     return tags
         .map((tag) => tag.replace(/[\u0000-\u001f\u007f]/g, '').trim())
@@ -105,7 +113,20 @@ export function liveReload(options = {}) {
                     response.end();
                     return;
                 }
-                if (secret !== '' && request.headers?.['x-live-reload-secret'] !== secret) {
+                // TYPO3 posts server-side and never sends Sec-Fetch-Site;
+                // a browser script on a foreign origin always does.
+                if (request.headers?.['sec-fetch-site'] === 'cross-site') {
+                    response.statusCode = 403;
+                    response.end();
+                    return;
+                }
+                const contentType = request.headers?.['content-type'];
+                if (typeof contentType !== 'string' || !contentType.toLowerCase().includes('application/json')) {
+                    response.statusCode = 415;
+                    response.end();
+                    return;
+                }
+                if (secret !== '' && !matchesSecret(request.headers?.['x-live-reload-secret'], secret)) {
                     response.statusCode = 401;
                     response.end();
                     return;
