@@ -35,7 +35,10 @@ final class RenderedFileCollector implements SingletonInterface
      */
     public function fileTags(string $projectPath): array
     {
-        $prefix = rtrim($projectPath, '/') . '/';
+        // Recorded files are realpath'd below, so the prefix must be
+        // resolved too or a symlinked project path never matches.
+        $resolvedProjectPath = realpath($projectPath);
+        $prefix = rtrim($resolvedProjectPath !== false ? $resolvedProjectPath : $projectPath, '/') . '/';
         $tags = [];
         foreach (array_keys($this->paths) as $path) {
             $resolved = realpath($path);

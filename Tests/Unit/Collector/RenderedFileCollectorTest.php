@@ -53,6 +53,27 @@ final class RenderedFileCollectorTest extends TestCase
     }
 
     #[Test]
+    public function matchesFilesWhenTheProjectPathItselfIsASymlink(): void
+    {
+        $file = $this->projectPath . '/local/site/Resources/Partial.html';
+        touch($file);
+        $linkedProjectPath = $this->projectPath . '-linked';
+        symlink($this->projectPath, $linkedProjectPath);
+
+        $collector = $this->createCollector();
+        $collector->add($file);
+
+        try {
+            self::assertSame(
+                ['file:local/site/Resources/Partial.html'],
+                $collector->fileTags($linkedProjectPath),
+            );
+        } finally {
+            unlink($linkedProjectPath);
+        }
+    }
+
+    #[Test]
     public function dropsFilesUnderTheVendorDirectoryAndOutsideTheProject(): void
     {
         $vendorFile = $this->projectPath . '/vendor/wazum/Library.php';
