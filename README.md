@@ -2,7 +2,7 @@
   <img src="Resources/Public/Icons/Extension.svg" alt="Live Reload" width="96" height="96">
 </p>
 <h1 align="center">Live Reload</h1>
-<p align="center"><em>Save a record in the backend — or a Fluid partial in your editor. The right browser tabs reload. Nothing else moves.</em></p>
+<p align="center"><em>Save a Fluid partial in your editor — or a record in the backend. The right browser tabs reload. Nothing else moves.</em></p>
 <p align="center"><a href="https://wazum.github.io/typo3-live-reload/"><strong>Overview &amp; demo →</strong></a></p>
 <br>
 
@@ -12,7 +12,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/wazum/typo3-live-reload.svg)](https://packagist.org/packages/wazum/typo3-live-reload)
 [![License](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
 
-Two kinds of changes reach your open browser tabs, both precisely targeted: **[content edits](#content-reloads)** in the TYPO3 backend and **[source-file edits](#file-reloads)** in your code editor. Both work through the same mechanism — a changed *thing* becomes a tag, each page carries the tags it rendered, and a tab only reloads when the two intersect. Tabs that are not affected keep their scroll position, form state, and open dialogs.
+Two kinds of changes reach your open browser tabs, both precisely targeted: **[source-file edits](#file-reloads)** in your code editor and **[content edits](#content-reloads)** in the TYPO3 backend. Both work through the same mechanism — a changed *thing* becomes a tag, each page carries the tags it rendered, and a tab only reloads when the two intersect. Tabs that are not affected keep their scroll position, form state, and open dialogs.
 
 How a change reaches the browser is decided by the environment, not by you: when a Vite dev server is running it is pushed over the WebSocket Vite already holds open; when none runs — a plain local install, or a shared Staging environment — each open tab polls a small endpoint instead (content changes only; file reloads need the dev server's file watcher).
 
