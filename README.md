@@ -3,6 +3,7 @@
 </p>
 <h1 align="center">Live Reload</h1>
 <p align="center"><em>Save a record in the backend — or a Fluid partial in your editor. The right browser tabs reload. Nothing else moves.</em></p>
+<p align="center"><a href="https://wazum.github.io/typo3-live-reload/"><strong>Overview &amp; demo →</strong></a></p>
 <br>
 
 [![Tests](https://github.com/wazum/typo3-live-reload/workflows/Tests/badge.svg)](https://github.com/wazum/typo3-live-reload/actions)

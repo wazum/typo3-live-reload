@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Targeted live reload for TYPO3. Reload only the browser tabs affected by a content or Fluid file change.">
+    <meta name="theme-color" content="#f7f5f0">
+    <meta property="og:title" content="Live Reload for TYPO3">
+    <meta property="og:description" content="Save content or a Fluid file. Only the affected browser tabs reload.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://wazum.github.io/typo3-live-reload/">
+    <title>Live Reload for TYPO3</title>
+    <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+        <a class="brand" href="#top" aria-label="Live Reload home">
+            <img src="assets/mark.svg" alt="" width="28" height="28">
+            <span>Live Reload for TYPO3</span>
+        </a>
+        <nav aria-label="Main navigation">
+            <a href="#how-it-works">How it works</a>
+            <a href="#install">Install</a>
+            <a href="https://github.com/wazum/typo3-live-reload">GitHub ↗</a>
+        </nav>
+    </header>
+
+    <main id="main">
+        <section class="hero" id="top">
+            <div class="hero-copy">
+                <p class="eyebrow">Targeted live reload for TYPO3</p>
+                <h1>Reload only<br>affected pages.</h1>
+                <p class="lead">Save a Fluid file or content in the TYPO3 backend. Only browser tabs that use the changed file or record reload. Other tabs keep their state.</p>
+                <div class="hero-actions">
+                    <a class="button primary" href="#install">Install the extension</a>
+                    <a class="button secondary" href="https://github.com/wazum/typo3-live-reload#readme">Read the full documentation</a>
+                </div>
+                <p class="requirements">TYPO3 13.4 or 14.3+ · PHP 8.2+ · Open source</p>
+            </div>
+
+            <div class="result-panel" role="group" aria-label="Example of a targeted reload">
+                <div class="result-title">
+                    <span>Two change sources</span>
+                    <span class="status"><i></i> Connected</span>
+                </div>
+                <div class="change-sources">
+                    <div class="change-row">
+                        <span class="change-icon">F</span>
+                        <div><strong>Fluid file saved</strong><code>HomeTeaser.html</code></div>
+                    </div>
+                    <div class="change-row">
+                        <span class="change-icon content-icon">C</span>
+                        <div><strong>Content saved</strong><code>tt_content_42</code></div>
+                    </div>
+                </div>
+                <div class="result-arrow">Only matching pages reload</div>
+                <div class="tabs">
+                    <div class="tab affected">
+                        <span class="tab-icon">↻</span>
+                        <div><strong>Homepage</strong><small>Uses the changed file or content</small></div>
+                        <b>Reloads</b>
+                    </div>
+                    <div class="tab">
+                        <span class="tab-icon">—</span>
+                        <div><strong>Contact</strong><small>Not affected</small></div>
+                        <b>Stays</b>
+                    </div>
+                    <div class="tab">
+                        <span class="tab-icon">—</span>
+                        <div><strong>News overview</strong><small>Not affected</small></div>
+                        <b>Stays</b>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="summary-strip" aria-label="Main benefits">
+            <div><strong>Two change sources</strong><span>Fluid file edits and backend content changes use the same targeted flow.</span></div>
+            <div><strong>Automatic</strong><span>No browser extension and no manual refresh.</span></div>
+            <div><strong>Safe</strong><span>Inactive for visitors and never blocks an editor save.</span></div>
+        </section>
+
+        <section class="section modes" id="how-it-works">
+            <div class="section-intro">
+                <p class="eyebrow">What it reloads</p>
+                <h2>Fluid file and content reloads use the same rule.</h2>
+                <p>A browser tab reloads when its rendered tags overlap with the tags of a change.</p>
+            </div>
+
+            <div class="mode-grid">
+                <article>
+                    <div class="mode-heading">
+                        <span class="number">01</span>
+                        <span class="mode-label">Code editor</span>
+                    </div>
+                    <h3>Fluid file reloads</h3>
+                    <p>Save a Fluid template, partial, component, or ViewHelper. Rendered-file tags identify every page that used it.</p>
+                    <ul>
+                        <li>Knows which files each page rendered</li>
+                        <li>Uses the existing Vite dev server</li>
+                        <li>Keeps normal CSS and JavaScript HMR</li>
+                    </ul>
+                </article>
+                <article>
+                    <div class="mode-heading">
+                        <span class="number">02</span>
+                        <span class="mode-label">TYPO3 backend</span>
+                    </div>
+                    <h3>Content reloads</h3>
+                    <p>Save a page, content element, or another record. TYPO3 cache tags identify every open page that shows it.</p>
+                    <ul>
+                        <li>Works through Vite or polling</li>
+                        <li>Useful for development and staging</li>
+                        <li>Supports custom extension tags</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="section process">
+            <div class="section-intro compact">
+                <p class="eyebrow">How it works</p>
+                <h2>Three small steps.</h2>
+            </div>
+            <ol class="process-list">
+                <li><span>1</span><div><strong>A change creates tags</strong><p>For example, <code>file:packages/site/Partials/Teaser.html</code> or <code>tt_content_42</code>.</p></div></li>
+                <li><span>2</span><div><strong>The tags reach every open tab</strong><p>Vite pushes them over its WebSocket. Without Vite, logged-in editors can use polling.</p></div></li>
+                <li><span>3</span><div><strong>Each tab checks its own tags</strong><p>A matching tab reloads. A tab without a match does nothing.</p></div></li>
+            </ol>
+        </section>
+
+        <section class="section install" id="install">
+            <div class="install-heading">
+                <p class="eyebrow">Setup</p>
+                <h2>Install the package.<br>Connect Vite for Fluid reloads.</h2>
+            </div>
+            <div class="install-step composer-step">
+                <span class="step-marker">1</span>
+                <div>
+                    <h3>Install with Composer</h3>
+                    <p>This activates content reloads in the Development context.</p>
+                </div>
+                <div class="terminal composer-terminal">
+                    <div class="terminal-bar"><span>Terminal</span><button type="button" data-copy="composer require --dev wazum/typo3-live-reload" aria-live="polite">Copy command</button></div>
+                    <pre><code><span>$</span> composer require --dev wazum/typo3-live-reload</code></pre>
+                </div>
+                <p class="install-note">Upgraded sites must enable the <code>frontend.cache.autoTagging</code> feature toggle — it is on by default only for new TYPO3 installations. Without it, content reloads only trigger for edits on the exact page you are viewing.</p>
+            </div>
+            <div class="install-step vite-step">
+                <span class="step-marker">2</span>
+                <div>
+                    <h3>Add the Vite plugin</h3>
+                    <p>This enables targeted reloads for Fluid files and ViewHelpers. The plugin is included in the Composer package; no npm package is needed.</p>
+                </div>
+                <div class="terminal">
+                    <div class="terminal-bar"><span>vite.config.ts</span><button type="button" data-copy-target="#vite-config" aria-live="polite">Copy code</button></div>
+                    <pre><code id="vite-config"><span>import</span> { defineConfig } <span>from</span> <em>'vite'</em>
+<span>import</span> { liveReload } <span>from</span>
+  <em>'./vendor/wazum/typo3-live-reload/Resources/Private/Vite/dist/index.js'</em>
+
+export default defineConfig({
+  plugins: [
+    liveReload({ watch: { paths: [<em>'packages'</em>] } }),
+  ],
+})</code></pre>
+                </div>
+            </div>
+            <a class="setup-link" href="https://github.com/wazum/typo3-live-reload#installation">Installation details and configuration →</a>
+        </section>
+
+        <section class="section practical">
+            <div class="section-intro compact">
+                <p class="eyebrow">Practical details</p>
+                <h2>Designed to stay out of the way.</h2>
+            </div>
+            <div class="practical-grid">
+                <article><h3>Nothing for visitors</h3><p>Outside Development, only logged-in backend users receive live reload on explicitly allowed contexts.</p></article>
+                <article><h3>Saves stay reliable</h3><p>Broadcasting happens after the response. A failed broadcast never breaks an editor action.</p></article>
+                <article><h3>Works with CSP</h3><p>Injected scripts automatically use TYPO3's Content Security Policy nonce.</p></article>
+                <article><h3>You stay in control</h3><p>Pause a session in the Admin Panel or replace the reload with Turbo or your own browser code.</p></article>
+            </div>
+        </section>
+
+        <aside class="companion" aria-labelledby="solr-companion-title">
+            <div class="companion-copy">
+                <span class="companion-label">Related extension</span>
+                <h2 id="solr-companion-title">Using the Apache Solr for TYPO3 extension?</h2>
+                <p>Combine Live Reload with <a href="https://github.com/wazum/solr-eager-flush">Solr Eager Flush</a>. It indexes freshly queued records directly after a save, while Live Reload refreshes the affected open tabs.</p>
+                <p>Editors see current Solr results without waiting for the Index Queue Worker or refreshing the browser by hand.</p>
+                <a class="text-link" href="https://github.com/wazum/solr-eager-flush">View Solr Eager Flush ↗</a>
+            </div>
+            <ol class="companion-flow" aria-label="Combined editing workflow">
+                <li><span>1</span><strong>Save a record</strong></li>
+                <li><span>2</span><strong>Update Solr now</strong></li>
+                <li><span>3</span><strong>Reload affected tabs</strong></li>
+            </ol>
+        </aside>
+
+        <section class="closing">
+            <div>
+                <p class="eyebrow">Live Reload for TYPO3</p>
+                <h2>Less manual refreshing.<br>More focused work.</h2>
+            </div>
+            <div class="closing-actions">
+                <a class="button primary" href="https://github.com/wazum/typo3-live-reload">View on GitHub ↗</a>
+                <a href="https://packagist.org/packages/wazum/typo3-live-reload">Open on Packagist ↗</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <a class="brand" href="#top"><img src="assets/mark.svg" alt="" width="24" height="24"><span>Live Reload</span></a>
+        <p>Made with <span class="heart" role="img" aria-label="love">♥</span> by <a href="mailto:wolfgang@wazum.com">Wolfgang Klinger</a> for the TYPO3 community.</p>
+        <div><a href="https://github.com/wazum/typo3-live-reload">GitHub</a><a href="https://github.com/wazum/typo3-live-reload/blob/main/LICENSE">GPL-2.0</a></div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('[data-copy], [data-copy-target]').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const originalLabel = button.textContent
+                const value = button.dataset.copy ?? document.querySelector(button.dataset.copyTarget).textContent.trim()
+                try {
+                    await navigator.clipboard.writeText(value)
+                } catch {
+                    const area = document.createElement('textarea')
+                    area.value = value
+                    area.setAttribute('readonly', '')
+                    area.style.position = 'fixed'
+                    area.style.opacity = '0'
+                    document.body.appendChild(area)
+                    area.select()
+                    document.execCommand('copy')
+                    area.remove()
+                }
+                button.textContent = 'Copied'
+                window.setTimeout(() => { button.textContent = originalLabel }, 1600)
+            })
+        })
+    </script>
+</body>
+</html>
