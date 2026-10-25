@@ -4,7 +4,13 @@ All notable changes to Live Reload are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project follows
 [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## 2.2.1 - 2026-10-25
+
+### Changed
+
+- The README is shorter and links to separate documents in `Documentation/` for the details. A
+  diagram shows how a change reaches the right tabs, and an
+  [overview and demo page](https://wazum.github.io/typo3-live-reload/) shows it in action.
 
 ### Fixed
 
