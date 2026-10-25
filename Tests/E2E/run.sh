@@ -56,9 +56,10 @@ vendor/bin/typo3 cache:flush
 php -r '$database = glob("var/sqlite/cms-*.sqlite")[0]; (new PDO("sqlite:" . $database))->exec("PRAGMA journal_mode=WAL");'
 
 unset VITE_SERVER_URI VITE_PRIMARY_PORT
-TYPO3_CONTEXT=Development VITE_PRIMARY_PORT=5273 php -S 127.0.0.1:8080 -t public router.php >"${E2E_DIR}/.php-server.log" 2>&1 &
+# The tests edit PHP files and expect the next request to use them.
+TYPO3_CONTEXT=Development VITE_PRIMARY_PORT=5273 php -d opcache.revalidate_freq=0 -S 127.0.0.1:8080 -t public router.php >"${E2E_DIR}/.php-server.log" 2>&1 &
 echo $! > "${E2E_DIR}/.php-server.pid"
-TYPO3_CONTEXT='Production/Staging' php -S 127.0.0.1:8081 -t public router.php >"${E2E_DIR}/.php-server-staging.log" 2>&1 &
+TYPO3_CONTEXT='Production/Staging' php -d opcache.revalidate_freq=0 -S 127.0.0.1:8081 -t public router.php >"${E2E_DIR}/.php-server-staging.log" 2>&1 &
 echo $! > "${E2E_DIR}/.php-server-staging.pid"
 # Direct node invocation so $! is the vite pid itself, not an npx wrapper.
 node node_modules/vite/bin/vite.js --config vite.config.ts >"${E2E_DIR}/.vite.log" 2>&1 &
