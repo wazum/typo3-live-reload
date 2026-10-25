@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="344" height="704" viewBox="0 0 344 704" role="img" aria-labelledby="hiw-narrow-title hiw-narrow-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="hiw-narrow-title">How a change reaches the right tabs</title>
+<desc id="hiw-narrow-desc">A saved file or record becomes tags. The Vite dev server or the poll endpoint sends these tags to every open tab. The tabs that rendered the changed file or show the changed record reload, and a tab without a matching tag stays as it is.</desc>
+
+<defs>
+    <marker id="hiw-n-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <polygon points="0 0, 10 4, 0 8" fill="#5B6570"/>
+    </marker>
+    <marker id="hiw-n-arrow-ink" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <polygon points="0 0, 10 4, 0 8" fill="#1A1E24"/>
+    </marker>
+</defs>
+
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+
+<rect x="24" y="296" width="296" height="384" rx="8" fill="rgba(26,30,36,0.02)" stroke="rgba(26,30,36,0.28)" stroke-width="1" stroke-dasharray="6,5"/>
+<text x="172" y="664" fill="rgba(26,30,36,0.62)" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.10em">EACH TAB COMPARES THE TAGS</text>
+
+<line x1="172" y1="112" x2="172" y2="176" stroke="#1A1E24" stroke-width="2" marker-end="url(#hiw-n-arrow-ink)"/>
+<rect x="184" y="136" width="40" height="16" rx="2" fill="#FFFFFF"/>
+<text x="188" y="148" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="0.04em">TAGS</text>
+
+<path d="M48,264 V580 Q48,588 56,588 H80" fill="none" stroke="#1A1E24" stroke-width="2" marker-end="url(#hiw-n-arrow-ink)"/>
+<line x1="49" y1="364" x2="80" y2="364" stroke="#1A1E24" stroke-width="2" marker-end="url(#hiw-n-arrow-ink)"/>
+<line x1="49" y1="476" x2="80" y2="476" stroke="#5B6570" stroke-width="1.2" marker-end="url(#hiw-n-arrow)"/>
+
+<rect x="24" y="24" width="296" height="88" rx="6" fill="#FFFFFF" stroke="#1A1E24" stroke-width="1"/>
+<rect x="36" y="36" width="104" height="22" rx="3" fill="transparent" stroke="rgba(26,30,36,0.40)" stroke-width="0.8"/>
+<text x="88" y="47" fill="#1A1E24" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">YOUR CHANGE</text>
+<text x="172" y="80" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">A saved file or record</text>
+<text x="172" y="100" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">becomes tags</text>
+
+<rect x="24" y="176" width="296" height="88" rx="6" fill="#FFFFFF" stroke="#1A1E24" stroke-width="1"/>
+<text x="172" y="216" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Vite or poll endpoint</text>
+<text x="172" y="238" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">sends the tags to every tab</text>
+
+<rect x="80" y="320" width="232" height="88" rx="6" fill="#FFFFFF"/>
+<rect x="80" y="320" width="232" height="88" rx="6" fill="rgba(255,135,0,0.10)" stroke="#ED6D05" stroke-width="1.2"/>
+<rect x="92" y="332" width="72" height="22" rx="3" fill="transparent" stroke="rgba(237,109,5,0.50)" stroke-width="0.8"/>
+<text x="128" y="343" fill="#A05E00" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">RELOADS</text>
+<text x="196" y="376" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Tab /home</text>
+<text x="196" y="396" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">rendered the file</text>
+
+<rect x="80" y="432" width="232" height="88" rx="6" fill="#FFFFFF"/>
+<rect x="80" y="432" width="232" height="88" rx="6" fill="rgba(26,30,36,0.05)" stroke="#5B6570" stroke-width="1"/>
+<rect x="92" y="444" width="56" height="22" rx="3" fill="transparent" stroke="rgba(91,101,112,0.50)" stroke-width="0.8"/>
+<text x="120" y="455" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">STAYS</text>
+<text x="196" y="488" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Tab /contact</text>
+<text x="196" y="508" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">no matching tag</text>
+
+<rect x="80" y="544" width="232" height="88" rx="6" fill="#FFFFFF"/>
+<rect x="80" y="544" width="232" height="88" rx="6" fill="rgba(255,135,0,0.10)" stroke="#ED6D05" stroke-width="1.2"/>
+<rect x="92" y="556" width="72" height="22" rx="3" fill="transparent" stroke="rgba(237,109,5,0.50)" stroke-width="0.8"/>
+<text x="128" y="567" fill="#A05E00" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">RELOADS</text>
+<text x="196" y="600" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Tab /news</text>
+<text x="196" y="620" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">shows the record</text>
+</svg>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How a change reaches the right tabs</title>
+<style>
+:root { --paper:#FFFFFF; --ink:#1A1E24; --muted:#5B6570; --rule:rgba(26,30,36,0.12); }
+* { box-sizing:border-box; }
+body {
+    margin:0; padding:48px 32px; background:var(--paper); color:var(--ink);
+    font-family:'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+main { max-width:960px; margin:0 auto; }
+.eyebrow {
+    margin:0 0 8px; font-family:'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:9px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted);
+}
+h1 { margin:0 0 4px; font-size:28px; font-weight:800; letter-spacing:-0.01em; }
+.sub { margin:0 0 16px; font-size:15px; line-height:1.6; color:var(--muted); max-width:64ch; }
+svg { display:block; width:100%; height:auto; }
+/* Container query, not viewport: a wide window can still hand the diagram a narrow column. */
+.figure { container-type:inline-size; }
+.tablet { max-width:880px; margin:0 auto; }
+.narrow { display:none; max-width:344px; margin:0 auto; }
+@container (max-width: 699px) {
+    .tablet { display:none; }
+    .narrow { display:block; }
+}
+@media (max-width: 1099px) { body { padding:32px 20px; } }
+footer {
+    margin-top:16px; padding-top:12px; border-top:1px solid var(--rule);
+    font-family:'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted);
+}
+</style>
+</head>
+<body>
+<main>
+    <p class="eyebrow">TYPO3 Live Reload</p>
+    <h1>How a change reaches the right tabs</h1>
+    <p class="sub">A saved file or record becomes tags. The tags go to every open tab, and each tab compares them with the tags of its own page. Only a tab with a matching tag reloads.</p>
+
+<div class="figure">
+<svg class="tablet" viewBox="0 0 880 584" role="img" aria-labelledby="hiw-tablet-title hiw-tablet-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="hiw-tablet-title">How a change reaches the right tabs</title>
+<desc id="hiw-tablet-desc">A partial saved in the code editor becomes a file tag, and a record saved in the TYPO3 backend becomes cache tags. The Vite dev server or the poll endpoint sends these tags to every open tab. The tab that rendered the partial and the tab that shows the record reload, and a third tab without a matching tag stays as it is.</desc>
+
+<defs>
+    <marker id="hiw-t-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <polygon points="0 0, 10 4, 0 8" fill="#5B6570"/>
+    </marker>
+    <marker id="hiw-t-arrow-ink" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <polygon points="0 0, 10 4, 0 8" fill="#1A1E24"/>
+    </marker>
+</defs>
+
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+
+<rect x="8" y="392" width="864" height="168" rx="8" fill="rgba(26,30,36,0.02)" stroke="rgba(26,30,36,0.28)" stroke-width="1" stroke-dasharray="6,5"/>
+<text x="440" y="544" fill="rgba(26,30,36,0.62)" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.14em">EACH OPEN TAB COMPARES THE TAGS WITH ITS OWN</text>
+
+<path d="M240,128 V172 Q240,180 248,180 H392 Q400,180 400,188 V232" fill="none" stroke="#1A1E24" stroke-width="2" marker-end="url(#hiw-t-arrow-ink)"/>
+<rect x="252" y="144" width="72" height="16" rx="2" fill="#FFFFFF"/>
+<text x="256" y="156" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="0.04em">FILE TAG</text>
+
+<path d="M640,128 V172 Q640,180 632,180 H488 Q480,180 480,188 V232" fill="none" stroke="#1A1E24" stroke-width="2" marker-end="url(#hiw-t-arrow-ink)"/>
+<rect x="540" y="144" width="88" height="16" rx="2" fill="#FFFFFF"/>
+<text x="544" y="156" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="0.04em">CACHE TAGS</text>
+
+<path d="M352,320 V364 Q352,372 344,372 H160 Q152,372 152,380 V424" fill="none" stroke="#1A1E24" stroke-width="2" marker-end="url(#hiw-t-arrow-ink)"/>
+<line x1="440" y1="320" x2="440" y2="424" stroke="#5B6570" stroke-width="1.2" marker-end="url(#hiw-t-arrow)"/>
+<path d="M528,320 V364 Q528,372 536,372 H720 Q728,372 728,380 V424" fill="none" stroke="#1A1E24" stroke-width="2" marker-end="url(#hiw-t-arrow-ink)"/>
+
+<rect x="88" y="40" width="304" height="88" rx="6" fill="#FFFFFF" stroke="#1A1E24" stroke-width="1"/>
+<rect x="100" y="52" width="104" height="22" rx="3" fill="transparent" stroke="rgba(26,30,36,0.40)" stroke-width="0.8"/>
+<text x="152" y="63" fill="#1A1E24" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">CODE EDITOR</text>
+<text x="240" y="96" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">You save a partial</text>
+<text x="240" y="116" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">Teaser.html</text>
+
+<rect x="488" y="40" width="304" height="88" rx="6" fill="#FFFFFF" stroke="#1A1E24" stroke-width="1"/>
+<rect x="500" y="52" width="120" height="22" rx="3" fill="transparent" stroke="rgba(26,30,36,0.40)" stroke-width="0.8"/>
+<text x="560" y="63" fill="#1A1E24" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">TYPO3 BACKEND</text>
+<text x="640" y="96" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">An editor saves a record</text>
+<text x="640" y="116" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">content element 12</text>
+
+<rect x="264" y="232" width="352" height="88" rx="6" fill="#FFFFFF" stroke="#1A1E24" stroke-width="1"/>
+<text x="440" y="272" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Vite dev server or poll endpoint</text>
+<text x="440" y="294" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">sends the tags to every tab</text>
+
+<rect x="24" y="424" width="256" height="88" rx="6" fill="#FFFFFF"/>
+<rect x="24" y="424" width="256" height="88" rx="6" fill="rgba(255,135,0,0.10)" stroke="#ED6D05" stroke-width="1.2"/>
+<rect x="36" y="436" width="72" height="22" rx="3" fill="transparent" stroke="rgba(237,109,5,0.50)" stroke-width="0.8"/>
+<text x="72" y="447" fill="#A05E00" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">RELOADS</text>
+<text x="152" y="480" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Tab /home</text>
+<text x="152" y="500" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">rendered Teaser.html</text>
+
+<rect x="312" y="424" width="256" height="88" rx="6" fill="#FFFFFF"/>
+<rect x="312" y="424" width="256" height="88" rx="6" fill="rgba(26,30,36,0.05)" stroke="#5B6570" stroke-width="1"/>
+<rect x="324" y="436" width="56" height="22" rx="3" fill="transparent" stroke="rgba(91,101,112,0.50)" stroke-width="0.8"/>
+<text x="352" y="447" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">STAYS</text>
+<text x="440" y="480" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Tab /contact</text>
+<text x="440" y="500" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">no matching tag</text>
+
+<rect x="600" y="424" width="256" height="88" rx="6" fill="#FFFFFF"/>
+<rect x="600" y="424" width="256" height="88" rx="6" fill="rgba(255,135,0,0.10)" stroke="#ED6D05" stroke-width="1.2"/>
+<rect x="612" y="436" width="72" height="22" rx="3" fill="transparent" stroke="rgba(237,109,5,0.50)" stroke-width="0.8"/>
+<text x="648" y="447" fill="#A05E00" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">RELOADS</text>
+<text x="728" y="480" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Tab /news</text>
+<text x="728" y="500" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">shows content element 12</text>
+</svg>
+
+<svg class="narrow" viewBox="0 0 344 704" role="img" aria-labelledby="hiw-narrow-title hiw-narrow-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="hiw-narrow-title">How a change reaches the right tabs</title>
+<desc id="hiw-narrow-desc">A saved file or record becomes tags. The Vite dev server or the poll endpoint sends these tags to every open tab. The tabs that rendered the changed file or show the changed record reload, and a tab without a matching tag stays as it is.</desc>
+
+<defs>
+    <marker id="hiw-n-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <polygon points="0 0, 10 4, 0 8" fill="#5B6570"/>
+    </marker>
+    <marker id="hiw-n-arrow-ink" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <polygon points="0 0, 10 4, 0 8" fill="#1A1E24"/>
+    </marker>
+</defs>
+
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+
+<rect x="24" y="296" width="296" height="384" rx="8" fill="rgba(26,30,36,0.02)" stroke="rgba(26,30,36,0.28)" stroke-width="1" stroke-dasharray="6,5"/>
+<text x="172" y="664" fill="rgba(26,30,36,0.62)" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.10em">EACH TAB COMPARES THE TAGS</text>
+
+<line x1="172" y1="112" x2="172" y2="176" stroke="#1A1E24" stroke-width="2" marker-end="url(#hiw-n-arrow-ink)"/>
+<rect x="184" y="136" width="40" height="16" rx="2" fill="#FFFFFF"/>
+<text x="188" y="148" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="0.04em">TAGS</text>
+
+<path d="M48,264 V580 Q48,588 56,588 H80" fill="none" stroke="#1A1E24" stroke-width="2" marker-end="url(#hiw-n-arrow-ink)"/>
+<line x1="49" y1="364" x2="80" y2="364" stroke="#1A1E24" stroke-width="2" marker-end="url(#hiw-n-arrow-ink)"/>
+<line x1="49" y1="476" x2="80" y2="476" stroke="#5B6570" stroke-width="1.2" marker-end="url(#hiw-n-arrow)"/>
+
+<rect x="24" y="24" width="296" height="88" rx="6" fill="#FFFFFF" stroke="#1A1E24" stroke-width="1"/>
+<rect x="36" y="36" width="104" height="22" rx="3" fill="transparent" stroke="rgba(26,30,36,0.40)" stroke-width="0.8"/>
+<text x="88" y="47" fill="#1A1E24" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">YOUR CHANGE</text>
+<text x="172" y="80" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">A saved file or record</text>
+<text x="172" y="100" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">becomes tags</text>
+
+<rect x="24" y="176" width="296" height="88" rx="6" fill="#FFFFFF" stroke="#1A1E24" stroke-width="1"/>
+<text x="172" y="216" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Vite or poll endpoint</text>
+<text x="172" y="238" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">sends the tags to every tab</text>
+
+<rect x="80" y="320" width="232" height="88" rx="6" fill="#FFFFFF"/>
+<rect x="80" y="320" width="232" height="88" rx="6" fill="rgba(255,135,0,0.10)" stroke="#ED6D05" stroke-width="1.2"/>
+<rect x="92" y="332" width="72" height="22" rx="3" fill="transparent" stroke="rgba(237,109,5,0.50)" stroke-width="0.8"/>
+<text x="128" y="343" fill="#A05E00" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">RELOADS</text>
+<text x="196" y="376" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Tab /home</text>
+<text x="196" y="396" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">rendered the file</text>
+
+<rect x="80" y="432" width="232" height="88" rx="6" fill="#FFFFFF"/>
+<rect x="80" y="432" width="232" height="88" rx="6" fill="rgba(26,30,36,0.05)" stroke="#5B6570" stroke-width="1"/>
+<rect x="92" y="444" width="56" height="22" rx="3" fill="transparent" stroke="rgba(91,101,112,0.50)" stroke-width="0.8"/>
+<text x="120" y="455" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">STAYS</text>
+<text x="196" y="488" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Tab /contact</text>
+<text x="196" y="508" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">no matching tag</text>
+
+<rect x="80" y="544" width="232" height="88" rx="6" fill="#FFFFFF"/>
+<rect x="80" y="544" width="232" height="88" rx="6" fill="rgba(255,135,0,0.10)" stroke="#ED6D05" stroke-width="1.2"/>
+<rect x="92" y="556" width="72" height="22" rx="3" fill="transparent" stroke="rgba(237,109,5,0.50)" stroke-width="0.8"/>
+<text x="128" y="567" fill="#A05E00" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle" letter-spacing="0.08em" dy="4">RELOADS</text>
+<text x="196" y="600" fill="#1A1E24" font-size="16" font-weight="600" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" text-anchor="middle">Tab /news</text>
+<text x="196" y="620" fill="#5B6570" font-size="12" font-family="'Source Code Pro',ui-monospace,SFMono-Regular,Menlo,monospace" text-anchor="middle">shows the record</text>
+</svg>
+</div>
+
+    <footer>wazum · typo3-live-reload</footer>
+</main>
+</body>
+</html>
