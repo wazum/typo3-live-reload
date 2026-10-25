@@ -44,3 +44,6 @@ services:
 
   Wazum\LiveReload\Runtime\ResponseDetacher:
     alias: Wazum\LiveReload\Runtime\SapiResponseDetacher
+
+  Wazum\LiveReload\Runtime\ShutdownCallbacks:
+    alias: Wazum\LiveReload\Runtime\SapiShutdownCallbacks

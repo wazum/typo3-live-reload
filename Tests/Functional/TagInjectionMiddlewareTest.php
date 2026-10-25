@@ -9,18 +9,27 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionClass;
+use RuntimeException;
 use Throwable;
 use TYPO3\CMS\Core\Cache\CacheDataCollector;
 use TYPO3\CMS\Core\Cache\CacheTag;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Http\HtmlResponse;
+use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\ConsumableNonce;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Wazum\LiveReload\Collector\RenderedFileCollector;
+use Wazum\LiveReload\Configuration\ExtensionSettings;
 use Wazum\LiveReload\Middleware\TagInjectionMiddleware;
+use Wazum\LiveReload\Resolver\DevServerUrlResolver;
+use Wazum\LiveReload\Tests\Support\InMemoryBroadcastLog;
+use Wazum\LiveReload\Tests\Support\RecordingShutdownCallbacks;
 use Wazum\LiveReload\Tests\Support\SwitchesApplicationContext;
 
 final class TagInjectionMiddlewareTest extends FunctionalTestCase
@@ -109,7 +118,7 @@ final class TagInjectionMiddlewareTest extends FunctionalTestCase
         $file = $projectPath . '/local/site/Partial.html';
         mkdir(dirname($file), 0775, true);
         touch($file);
-        $this->get(\Wazum\LiveReload\Collector\RenderedFileCollector::class)->add($file);
+        $this->get(RenderedFileCollector::class)->add($file);
 
         $response = $this->process($this->request(), $this->htmlHandler('<html><head></head><body></body></html>'));
 
@@ -197,6 +206,82 @@ final class TagInjectionMiddlewareTest extends FunctionalTestCase
         self::assertStringContainsString('"endpoint":"\/__live-reload\/poll"', $html);
         self::assertMatchesRegularExpression('#<script defer src="[^"]*poll-client\.js[^"]*"></script>#', $html);
         self::assertStringNotContainsString('virtual:live-reload', $html);
+    }
+
+    #[Test]
+    public function printsUntaggedClientAfterTheErrorPageWhenRenderingFails(): void
+    {
+        $shutdownCallbacks = new RecordingShutdownCallbacks();
+        $failure = new RuntimeException('Broken partial');
+
+        try {
+            $this->middleware($shutdownCallbacks)->process($this->request(), $this->failingHandler($failure));
+            self::fail('The rendering exception must not be swallowed');
+        } catch (RuntimeException $exception) {
+            self::assertSame($failure, $exception);
+        }
+
+        $output = $shutdownCallbacks->runAndCaptureOutput();
+        self::assertStringContainsString('"tags":[]', $output);
+        self::assertStringContainsString('virtual:live-reload', $output);
+    }
+
+    #[Test]
+    public function printsNothingAfterAnImmediateResponse(): void
+    {
+        $shutdownCallbacks = new RecordingShutdownCallbacks();
+        $immediateResponse = new ImmediateResponseException(new JsonResponse(['error' => 'gone']));
+
+        try {
+            $this->middleware($shutdownCallbacks)->process($this->request(), $this->failingHandler($immediateResponse));
+            self::fail('The immediate response must not be swallowed');
+        } catch (ImmediateResponseException $exception) {
+            self::assertSame($immediateResponse, $exception);
+        }
+
+        self::assertSame('', $shutdownCallbacks->runAndCaptureOutput());
+    }
+
+    #[Test]
+    public function printsNothingAfterTheErrorPageOutsideActiveContexts(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['live_reload']['activeContexts'] = 'Testing';
+        $shutdownCallbacks = new RecordingShutdownCallbacks();
+
+        try {
+            $this->middleware($shutdownCallbacks)->process($this->request(), $this->failingHandler(new RuntimeException('Broken partial')));
+        } catch (RuntimeException) {
+        }
+
+        self::assertSame('', $shutdownCallbacks->runAndCaptureOutput());
+    }
+
+    private function middleware(RecordingShutdownCallbacks $shutdownCallbacks): TagInjectionMiddleware
+    {
+        $settings = new ExtensionSettings($this->get(ExtensionConfiguration::class));
+
+        return new TagInjectionMiddleware(
+            $settings,
+            new DevServerUrlResolver($settings),
+            new InMemoryBroadcastLog(),
+            $this->get(Context::class),
+            $this->get(RenderedFileCollector::class),
+            $shutdownCallbacks,
+        );
+    }
+
+    private function failingHandler(Throwable $failure): RequestHandlerInterface
+    {
+        return new class($failure) implements RequestHandlerInterface {
+            public function __construct(private readonly Throwable $failure)
+            {
+            }
+
+            public function handle(ServerRequestInterface $request): ResponseInterface
+            {
+                throw $this->failure;
+            }
+        };
     }
 
     private function policyBagFor(ConsumableNonce $nonce): \TYPO3\CMS\Core\Security\ContentSecurityPolicy\Middleware\PolicyBag

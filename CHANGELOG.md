@@ -4,6 +4,13 @@ All notable changes to Live Reload are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project follows
 [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- If a change breaks the page, the tab now reloads by itself once you fix the error. Before, the
+  error page stopped live reload and you had to reload the tab by hand.
+
 ## 2.2.0 - 2026-07-14
 
 ### Added

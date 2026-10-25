@@ -173,6 +173,8 @@ Fluid parses whole template files: a ViewHelper referenced anywhere in a parsed 
 
 **Safe by design** – A failed broadcast is silent, an uninstrumentable view renders exactly as without the extension, and a page without tag data reloads on every change instead of missing one.
 
+**Recovers from errors** – If a change breaks the page, you see the TYPO3 error page as usual. Fix the error, and the tab reloads by itself.
+
 **Scroll position stays** – Browsers restore it on reload by default; when a framework (for example Turbo) sets `history.scrollRestoration = 'manual'`, the client restores it itself.
 
 **You can take over the reload** – A cancelable `typo3:live-reload` DOM event fires before each reload. Cancel it and [morph the page in place](#morph-instead-of-reload) instead.
@@ -319,6 +321,7 @@ One thing remains for you when your development CSP is strict and does not use `
 - Only changes that go through TYPO3's `DataHandler` are broadcast — direct database writes are not seen.
 - Tags that extensions flush outside the DataHandler's list need the [event listener above](#broadcasting-tags-from-other-extensions).
 - Content rendered from an external index (for example Solr) updates on reindex, not on save.
+- Some errors stop live reload in that tab, for example a broken `Services.yaml` or PHP running out of memory. After you fix the error, reload the tab by hand once.
 - File reloads have their own list — see [File-reload limitations](#file-reload-limitations).
 
 ## License

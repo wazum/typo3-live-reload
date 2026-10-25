@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Page } from '@playwright/test'
-import { appendFileSync } from 'node:fs'
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const e2eDir = resolve(import.meta.dirname, '..')
@@ -150,3 +150,43 @@ test('editing the shared page template reloads all pages that rendered it', asyn
 
     await close()
 })
+
+function otherPageResponse(page: Page, statusMatches: (status: number) => boolean) {
+    return page.waitForResponse(
+        (response) => new URL(response.url()).pathname === '/other' && statusMatches(response.status()),
+        { timeout: 15000 },
+    )
+}
+
+const viewHelperBreakages = [
+    { name: 'a class the autoloader cannot find', render: 'return (new \\Wazum\\E2eFixture\\Missing())->render();' },
+    { name: 'a call with a missing argument', render: "return str_repeat('stamp');" },
+]
+
+for (const breakage of viewHelperBreakages) {
+    test(`a page broken by ${breakage.name} reloads again once the code is fixed`, async ({ page }) => {
+        const viewHelperPath = resolve(appDir, viewHelperFile)
+        const workingSource = readFileSync(viewHelperPath, 'utf-8')
+        const brokenSource = workingSource.replace(
+            "return '<div data-fixture=\"stamp\">stamp</div>';",
+            breakage.render,
+        )
+        expect(brokenSource).not.toBe(workingSource)
+
+        try {
+            await page.goto('/other')
+            await expect(page.locator('[data-fixture="stamp"]')).toBeVisible()
+
+            const errorPageLoaded = otherPageResponse(page, (status) => status >= 500)
+            writeFileSync(viewHelperPath, brokenSource)
+            await errorPageLoaded
+
+            const fixedPageLoaded = otherPageResponse(page, (status) => status === 200)
+            writeFileSync(viewHelperPath, workingSource)
+            await fixedPageLoaded
+            await expect(page.locator('[data-fixture="stamp"]')).toBeVisible()
+        } finally {
+            writeFileSync(viewHelperPath, workingSource)
+        }
+    })
+}

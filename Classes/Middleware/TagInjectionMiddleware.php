@@ -14,6 +14,7 @@ use Throwable;
 use TYPO3\CMS\Core\Cache\CacheDataCollectorInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\ConsumableNonce;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Middleware\PolicyBag;
@@ -23,6 +24,7 @@ use Wazum\LiveReload\Broadcast\BroadcastLogInterface;
 use Wazum\LiveReload\Collector\RenderedFileCollector;
 use Wazum\LiveReload\Configuration\ExtensionSettings;
 use Wazum\LiveReload\Resolver\DevServerUrlResolver;
+use Wazum\LiveReload\Runtime\ShutdownCallbacks;
 
 final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareInterface
 {
@@ -36,6 +38,7 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         private readonly BroadcastLogInterface $broadcastLog,
         private readonly Context $context,
         private readonly RenderedFileCollector $renderedFileCollector,
+        private readonly ShutdownCallbacks $shutdownCallbacks,
         private readonly ?object $systemResourceFactory = null,
         private readonly ?object $systemResourcePublisher = null,
     ) {
@@ -43,7 +46,15 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $response = $handler->handle($request);
+        try {
+            $response = $handler->handle($request);
+        } catch (ImmediateResponseException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            $this->injectAfterErrorPage($request);
+
+            throw $exception;
+        }
         if (!$this->settings->contextAllowed()) {
             return $response;
         }
@@ -55,6 +66,21 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
 
             return $response;
         }
+    }
+
+    /**
+     * The exception handler echoes the error page past this middleware; without
+     * a client on it, fixing the error would never reload the tab.
+     */
+    private function injectAfterErrorPage(ServerRequestInterface $request): void
+    {
+        if (!$this->settings->contextAllowed()) {
+            return;
+        }
+
+        $this->shutdownCallbacks->register(function () use ($request): void {
+            echo $this->snippet($request, '', []) ?? '';
+        });
     }
 
     private function inject(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -69,7 +95,7 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
             return $response;
         }
 
-        $snippet = $this->snippet($request, $html);
+        $snippet = $this->snippet($request, $html, $this->tags($request));
         if ($snippet === null) {
             return $response;
         }
@@ -92,26 +118,32 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         return $bodyEnd === false ? null : $bodyEnd;
     }
 
-    private function snippet(ServerRequestInterface $request, string $html): ?string
+    /**
+     * @param array<string> $tags
+     */
+    private function snippet(ServerRequestInterface $request, string $html, array $tags): ?string
     {
         if ($this->settings->developmentContext()) {
-            return $this->viteSnippet($request, $html) ?? $this->pollSnippet($request, $html);
+            return $this->viteSnippet($request, $html, $tags) ?? $this->pollSnippet($request, $html, $tags);
         }
         if (!$this->backendUserLoggedIn()) {
             return null;
         }
 
-        return $this->pollSnippet($request, $html);
+        return $this->pollSnippet($request, $html, $tags);
     }
 
-    private function viteSnippet(ServerRequestInterface $request, string $html): ?string
+    /**
+     * @param array<string> $tags
+     */
+    private function viteSnippet(ServerRequestInterface $request, string $html, array $tags): ?string
     {
         $devServerUrl = $this->devServerUrlResolver->resolve($request);
         if ($devServerUrl === null) {
             return null;
         }
 
-        $configuration = $this->configuration($request, ['transport' => 'vite']);
+        $configuration = $this->configuration($request, $tags, ['transport' => 'vite']);
         $nonceValue = $this->nonceValue($request);
         $nonceAttribute = $this->nonceAttribute($nonceValue);
         $moduleUrl = htmlspecialchars($devServerUrl . '/@id/virtual:live-reload');
@@ -121,9 +153,12 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
         return $this->withCspNonceMeta($snippet, $nonceValue, $html);
     }
 
-    private function pollSnippet(ServerRequestInterface $request, string $html): string
+    /**
+     * @param array<string> $tags
+     */
+    private function pollSnippet(ServerRequestInterface $request, string $html, array $tags): string
     {
-        $configuration = $this->configuration($request, [
+        $configuration = $this->configuration($request, $tags, [
             'transport' => 'poll',
             'endpoint' => PollEndpointMiddleware::PATH,
             'interval' => $this->settings->pollInterval(),
@@ -144,13 +179,14 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
     }
 
     /**
+     * @param array<string>             $tags
      * @param array<string, string|int> $transportConfiguration
      */
-    private function configuration(ServerRequestInterface $request, array $transportConfiguration): string
+    private function configuration(ServerRequestInterface $request, array $tags, array $transportConfiguration): string
     {
         return json_encode(
             array_merge(
-                ['tags' => $this->tags($request), 'mode' => $this->mode($request)],
+                ['tags' => $tags, 'mode' => $this->mode($request)],
                 $transportConfiguration,
             ),
             JSON_THROW_ON_ERROR | JSON_HEX_TAG,
