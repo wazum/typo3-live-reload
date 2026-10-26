@@ -4,7 +4,7 @@ All notable changes to Live Reload are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project follows
 [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## 2.3.0 - 2026-10-26
 
 ### Added
 
