@@ -36,6 +36,12 @@ final class ClearCachePostProcHook implements LoggerAwareInterface
         }
 
         try {
+            if (in_array($parameters['cacheCmd'] ?? null, ['all', 'pages'], true)) {
+                $this->collector->add(BroadcastTagCollector::RELOAD_ALL);
+
+                return;
+            }
+
             $tags = $this->normalizeTags((array)($parameters['tags'] ?? []));
             if ($tags === []) {
                 return;

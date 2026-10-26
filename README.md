@@ -34,6 +34,7 @@ kind of tag. A tab reloads only when its tags and the tags of the change overlap
 | A Fluid component (`<my:atom.button>`) | the tabs that rendered it |
 | A ViewHelper class | the tabs whose templates use it |
 | A record in the TYPO3 backend | the tabs that show it |
+| The caches, in the backend or with `typo3 cache:flush` | all open tabs |
 | CSS or TypeScript | Vite's hot update, often without a reload (through vite-asset-collector) |
 
 Vite's own hot reload can't handle the Fluid rows, because server-rendered Fluid never

@@ -10,6 +10,8 @@ use Wazum\LiveReload\Runtime\ResponseDetacher;
 
 final class BroadcastTagCollector implements SingletonInterface
 {
+    public const RELOAD_ALL = '*';
+
     /**
      * @var array<string, true>
      */

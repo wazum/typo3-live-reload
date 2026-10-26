@@ -1,4 +1,6 @@
 const scrollStorageKey = 'live-reload:scroll'
+// Sent on a cache flush. Must match BroadcastTagCollector::RELOAD_ALL.
+const reloadAllTag = '*'
 
 export interface ClientConfiguration {
     tags?: unknown
@@ -55,6 +57,7 @@ export function createClientCore(configuration: ClientConfiguration): ClientCore
         const affected =
             configuration.mode === 'always' ||
             ownTags.length === 0 ||
+            broadcastTags.includes(reloadAllTag) ||
             broadcastTags.some((tag) => ownTags.includes(tag))
         document.dispatchEvent(
             new CustomEvent('typo3:live-reload:broadcast', {

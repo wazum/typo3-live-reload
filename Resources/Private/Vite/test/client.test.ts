@@ -198,6 +198,12 @@ describe.each(transports)('client reload behavior via $name', ({ boot }) => {
         expect(reload).toHaveBeenCalledTimes(1)
     })
 
+    it('reloads every tab on a cache flush broadcast', async () => {
+        const client = await boot({ tags: ['pageId_1'], mode: 'tagged' })
+        await client.deliverBroadcast(['*'])
+        expect(reload).toHaveBeenCalledTimes(1)
+    })
+
     it('never reloads in paused mode', async () => {
         const client = await boot({ tags: ['pageId_1'], mode: 'paused' })
         await client.deliverBroadcast(['pageId_1'])

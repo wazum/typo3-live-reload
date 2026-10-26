@@ -60,3 +60,25 @@ test('editing a record reloads only the affected tab', async ({ browser }) => {
     await contextOther.close()
 })
 
+test('flushing the caches on the command line reloads every tab', async ({ browser }) => {
+    const contextHome = await browser.newContext()
+    const contextOther = await browser.newContext()
+    const homePage = await contextHome.newPage()
+    const otherPage = await contextOther.newPage()
+    await homePage.goto('/')
+    await otherPage.goto('/other')
+
+    const homeReloaded = homePage.waitForEvent('load', { timeout: 15000 })
+    const otherReloaded = otherPage.waitForEvent('load', { timeout: 15000 })
+
+    execFileSync('php', ['vendor/bin/typo3', 'cache:flush'], {
+        cwd: appDir,
+        env: { ...process.env, TYPO3_CONTEXT: 'Development' },
+    })
+
+    await Promise.all([homeReloaded, otherReloaded])
+
+    await contextHome.close()
+    await contextOther.close()
+})
+

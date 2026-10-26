@@ -4,6 +4,15 @@ All notable changes to Live Reload are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project follows
 [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Added
+
+- Flushing the caches reloads all open tabs. This works for the "Flush all caches" and
+  "Flush frontend caches" buttons in the backend and for `typo3 cache:flush`. Some errors only go
+  away with a cache flush, for example when you change the arguments of a Fluid component, and
+  the tab now comes back by itself.
+
 ## 2.2.1 - 2026-10-25
 
 ### Changed

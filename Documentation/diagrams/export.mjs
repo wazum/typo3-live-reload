@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 /**
- * Writes the .svg files the README embeds out of the .html sources.
- *
- * A source holds every responsive variant in one file behind container queries,
- * which GitHub cannot run: the README picks its variant with <picture media>, so
- * each one has to become a standalone file.
+ * GitHub can't run the container queries that switch between the variants. The
+ * README picks a variant with <picture media>, so each one must be its own file.
  */
 import * as fs from 'fs'
 import * as path from 'path'
@@ -27,10 +24,9 @@ function variant(source, name) {
     return source.slice(open.index, end + '</svg>'.length)
 }
 
-// Without width and height GitHub renders the image at its own default rather
-// than the drawing's aspect ratio.
-// XML knows five entities; an HTML one like &middot; parses inside the source page and
-// makes the exported file malformed, which GitHub renders as a missing image.
+// Without width and height, GitHub shows the image at its own default size.
+// XML knows only five entities. An HTML one like &middot; works in the source page
+// but breaks the exported file, and GitHub then shows a missing image.
 const XML_ENTITIES = /&(?!(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)[^;\s]*;/
 
 function standalone(markup) {

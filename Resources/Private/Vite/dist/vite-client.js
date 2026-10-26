@@ -1,5 +1,6 @@
 // src/core.ts
 var scrollStorageKey = "live-reload:scroll";
+var reloadAllTag = "*";
 function restoreScrollPosition() {
   try {
     const storedScroll = sessionStorage.getItem(scrollStorageKey);
@@ -38,7 +39,7 @@ function createClientCore(configuration2) {
     const received = payload;
     const broadcastTags = Array.isArray(received?.tags) ? received.tags : [];
     const ownTags = Array.isArray(configuration2.tags) ? configuration2.tags : [];
-    const affected = configuration2.mode === "always" || ownTags.length === 0 || broadcastTags.some((tag) => ownTags.includes(tag));
+    const affected = configuration2.mode === "always" || ownTags.length === 0 || broadcastTags.includes(reloadAllTag) || broadcastTags.some((tag) => ownTags.includes(tag));
     document.dispatchEvent(
       new CustomEvent("typo3:live-reload:broadcast", {
         detail: { tags: broadcastTags, matched: affected, mode: configuration2.mode }

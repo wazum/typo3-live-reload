@@ -69,8 +69,8 @@ final class TagInjectionMiddleware implements MiddlewareInterface, LoggerAwareIn
     }
 
     /**
-     * The exception handler echoes the error page past this middleware; without
-     * a client on it, fixing the error would never reload the tab.
+     * The exception handler prints the error page itself, after this middleware.
+     * Without a client on that page, fixing the error would never reload the tab.
      */
     private function injectAfterErrorPage(ServerRequestInterface $request): void
     {

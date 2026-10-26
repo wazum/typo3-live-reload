@@ -65,6 +65,32 @@ final class ClearCachePostProcHookTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function flushingAllCachesBroadcastsAReloadOfEveryTab(): void
+    {
+        $dataHandler = GeneralUtility::makeInstance(DataHandler::class);
+        $dataHandler->start([], []);
+        $dataHandler->clear_cacheCmd('all');
+
+        $collector = GeneralUtility::makeInstance(BroadcastTagCollector::class);
+        $collector->flush();
+
+        self::assertSame([[BroadcastTagCollector::RELOAD_ALL]], $this->broadcaster->received);
+    }
+
+    #[Test]
+    public function flushingTheFrontendCachesBroadcastsAReloadOfEveryTab(): void
+    {
+        $dataHandler = GeneralUtility::makeInstance(DataHandler::class);
+        $dataHandler->start([], []);
+        $dataHandler->clear_cacheCmd('pages');
+
+        $collector = GeneralUtility::makeInstance(BroadcastTagCollector::class);
+        $collector->flush();
+
+        self::assertSame([[BroadcastTagCollector::RELOAD_ALL]], $this->broadcaster->received);
+    }
+
+    #[Test]
     public function clearingASinglePageCacheBroadcastsThePageTag(): void
     {
         $dataHandler = GeneralUtility::makeInstance(DataHandler::class);
